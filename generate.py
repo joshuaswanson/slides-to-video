@@ -20,27 +20,12 @@ The script should be a markdown file with slide sections separated by '---':
 
 import argparse
 import re
-import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
 import torchaudio
 from chatterbox.tts import ChatterboxTTS
-
-
-def _find_ffmpeg() -> str:
-    """Find ffmpeg binary, falling back to imageio-ffmpeg if not in PATH."""
-    if shutil.which("ffmpeg"):
-        return "ffmpeg"
-    try:
-        import imageio_ffmpeg
-        return imageio_ffmpeg.get_ffmpeg_exe()
-    except ImportError:
-        raise RuntimeError("ffmpeg not found. Install it or run: pip install imageio[ffmpeg]")
-
-
-FFMPEG = _find_ffmpeg()
 
 
 def parse_script(script_path: Path) -> list[tuple[int, str]]:
@@ -67,7 +52,7 @@ def convert_voice_sample(voice_path: Path, output_path: Path) -> Path:
     if voice_path.suffix == ".wav":
         return voice_path
     subprocess.run(
-        [FFMPEG, "-y", "-i", str(voice_path), "-ar", "24000", "-ac", "1", str(output_path)],
+        ["ffmpeg", "-y", "-i", str(voice_path), "-ar", "24000", "-ac", "1", str(output_path)],
         check=True,
         capture_output=True,
     )
@@ -114,9 +99,13 @@ def extract_slide_images(pdf_path: Path, output_dir: Path) -> list[Path]:
 
 
 def get_audio_duration(audio_path: Path) -> float:
-    """Get duration of a WAV file in seconds."""
-    info = torchaudio.info(str(audio_path))
-    return info.num_frames / info.sample_rate
+    """Get duration of an audio file in seconds via ffprobe."""
+    result = subprocess.run(
+        ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
+         "-of", "default=noprint_wrappers=1:nokey=1", str(audio_path)],
+        capture_output=True, text=True, check=True,
+    )
+    return float(result.stdout.strip())
 
 
 def assemble_video(
@@ -133,7 +122,7 @@ def assemble_video(
         # Generate a silence file for the pause
         silence_path = tmpdir / "silence.wav"
         subprocess.run(
-            [FFMPEG, "-y", "-f", "lavfi", "-t", str(pause),
+            ["ffmpeg", "-y", "-f", "lavfi", "-t", str(pause),
              "-i", "anullsrc=r=24000:cl=mono", "-c:a", "pcm_s16le",
              str(silence_path)],
             check=True, capture_output=True,
@@ -150,7 +139,7 @@ def assemble_video(
             # Prepend silence so narration starts after the pause
             padded_audio = tmpdir / f"padded_{i:02d}.wav"
             subprocess.run(
-                [FFMPEG, "-y", "-i", str(silence_path), "-i", str(audio_clip),
+                ["ffmpeg", "-y", "-i", str(silence_path), "-i", str(audio_clip),
                  "-filter_complex", "[0:a][1:a]concat=n=2:v=0:a=1",
                  "-c:a", "pcm_s16le", str(padded_audio)],
                 check=True, capture_output=True,
@@ -158,7 +147,7 @@ def assemble_video(
 
             segment_path = tmpdir / f"segment_{i:02d}.mp4"
             subprocess.run(
-                [FFMPEG, "-y",
+                ["ffmpeg", "-y",
                  "-loop", "1", "-i", str(slide_img),
                  "-i", str(padded_audio),
                  "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
@@ -180,7 +169,7 @@ def assemble_video(
             "\n".join(f"file '{p}'" for p in segment_paths)
         )
         subprocess.run(
-            [FFMPEG, "-y", "-f", "concat", "-safe", "0",
+            ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
              "-i", str(concat_file), "-c", "copy", str(output_path)],
             check=True, capture_output=True,
         )
@@ -214,10 +203,9 @@ def main():
     slides = parse_script(args.script)
     print(f"  Found {len(slides)} slides\n")
 
-    args.cache_dir.mkdir(exist_ok=True)
-
     print("Converting voice sample...")
     voice_wav = convert_voice_sample(args.voice, args.cache_dir / "voice_converted.wav")
+    args.cache_dir.mkdir(exist_ok=True)
     print()
 
     print("Loading TTS model...")
