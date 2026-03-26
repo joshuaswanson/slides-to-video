@@ -1,0 +1,16 @@
+[project]
+name = "slides-to-video"
+version = "0.1.0"
+description = "Generate narrated presentation videos from slides, a script, and a voice sample"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "soundfile",
+    "torch",
+    "torchaudio",
+]
+
+[project.optional-dependencies]
+chatterbox = ["chatterbox-tts"]
+qwen3 = ["qwen-tts"]
+all = ["chatterbox-tts", "qwen-tts"]

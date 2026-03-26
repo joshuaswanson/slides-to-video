@@ -62,6 +62,12 @@ class ChatterboxEngine(TTSEngine):
     def generate(
         self, text: str, voice_wav_path: Path, language: str = "en",
     ) -> tuple[np.ndarray, int]:
+        if language != "en":
+            print(
+                f"  WARNING: Chatterbox only supports English. "
+                f"Ignoring --language {language}. Use --tts-engine qwen3 "
+                f"for multilingual support."
+            )
         wav_tensor = self.model.generate(text, audio_prompt_path=str(voice_wav_path))
         sr = self.model.sr
         wav = wav_tensor.squeeze().cpu().numpy()
