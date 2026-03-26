@@ -306,52 +306,35 @@ def generate_srt(
     print(f"  Saved subtitles to {output_path}")
 
 
-def _extract_ambient_noise(
+def _generate_ambient_noise(
     audio_path: Path, output_path: Path, duration: float,
 ) -> None:
-    """Extract the actual ambient noise from an audio clip using spectral gating.
+    """Generate ambient noise matching a clip's noise floor.
 
-    Uses ffmpeg's afftdn filter to isolate the noise component, then takes
-    a sample from the result and loops it.
+    Measures the noise floor RMS from the quietest parts of the audio,
+    then generates white noise at that level.
     """
-    denoised = output_path.parent / f"denoised_{output_path.stem}.wav"
-    noise_only = output_path.parent / f"noiseonly_{output_path.stem}.wav"
+    import numpy as np
+    import soundfile as sf_read
 
-    # First pass: denoise the audio
-    subprocess.run(
-        ["ffmpeg", "-y", "-i", str(audio_path),
-         "-af", "afftdn=nr=30:nt=w",
-         "-c:a", "pcm_s16le", str(denoised)],
-        check=True, capture_output=True,
-    )
-    # Subtract denoised from original to get just the noise
-    subprocess.run(
-        ["ffmpeg", "-y",
-         "-i", str(audio_path), "-i", str(denoised),
-         "-filter_complex",
-         "[0:a][1:a]amix=inputs=2:weights=1 -1:duration=first",
-         "-c:a", "pcm_s16le", str(noise_only)],
-        check=True, capture_output=True,
-    )
+    data, sr = sf_read.read(str(audio_path), dtype="float32")
+    window_size = int(0.1 * sr)
 
-    # Take a 0.5s sample from the middle and loop it
-    noise_dur = get_audio_duration(noise_only)
-    mid = max(0, noise_dur / 2 - 0.25)
-    noise_sample = output_path.parent / f"noisesample_{output_path.stem}.wav"
-    subprocess.run(
-        ["ffmpeg", "-y", "-i", str(noise_only),
-         "-ss", str(mid), "-t", "0.5",
-         "-c:a", "pcm_s16le", str(noise_sample)],
-        check=True, capture_output=True,
-    )
+    rms_values = []
+    for start in range(0, len(data) - window_size, window_size // 2):
+        window = data[start:start + window_size]
+        rms_values.append(float(np.sqrt(np.mean(window ** 2))))
 
-    subprocess.run(
-        ["ffmpeg", "-y", "-stream_loop", "-1",
-         "-i", str(noise_sample),
-         "-t", str(duration), "-c:a", "pcm_s16le",
-         str(output_path)],
-        check=True, capture_output=True,
-    )
+    # Bottom 5% represents the actual noise floor (gaps between words)
+    rms_values.sort()
+    bottom = rms_values[:max(1, len(rms_values) // 20)]
+    target_rms = float(np.median(bottom))
+
+    n_samples = int(duration * sr)
+    noise = np.random.randn(n_samples).astype(np.float32)
+    noise = noise * target_rms
+
+    sf_read.write(str(output_path), noise, sr)
 
 
 def assemble_video(
@@ -385,7 +368,7 @@ def assemble_video(
         ambient_paths = []
         for idx, clip in enumerate(audio_clips):
             ap = tmpdir / f"ambient_{idx:02d}.wav"
-            _extract_ambient_noise(clip, ap, pause)
+            _generate_ambient_noise(clip, ap, pause)
             ambient_paths.append(ap)
 
         # Split click into press (down) and release (up), ~75ms boundary.
