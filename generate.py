@@ -151,9 +151,9 @@ def _generate_slide_audio(
 
     # Simple case: no [pause] markers
     if len(segments) <= 1:
-        final_text = (segments[0] if segments else text) + "..."
         return engine.generate_to_file(
-            final_text, voice_wav_path, output_path, language=language,
+            segments[0] if segments else text,
+            voice_wav_path, output_path, language=language,
         )
 
     # Generate each segment, concat with silence gaps
@@ -162,10 +162,9 @@ def _generate_slide_audio(
         concat_parts = []
 
         for j, segment in enumerate(segments):
-            seg_text = segment + ("..." if j == len(segments) - 1 else "")
             seg_path = seg_tmpdir / f"seg_{j:02d}.wav"
             engine.generate_to_file(
-                seg_text, voice_wav_path, seg_path, language=language,
+                segment, voice_wav_path, seg_path, language=language,
             )
             concat_parts.append(seg_path)
 
@@ -285,13 +284,14 @@ def generate_srt(
     slides: list[tuple[int, str]],
     audio_clips: list[Path],
     output_path: Path,
+    pause: float = 1.0,
 ) -> None:
     """Generate an SRT subtitle file from slides and their audio durations."""
     entries = []
     current_time = 0.0
 
     for i, ((_, text), audio_clip) in enumerate(zip(slides, audio_clips)):
-        start_time = current_time
+        start_time = current_time + pause
         duration = get_audio_duration(audio_clip)
         end_time = start_time + duration
 
@@ -306,15 +306,64 @@ def generate_srt(
     print(f"  Saved subtitles to {output_path}")
 
 
+def _extract_ambient_noise(
+    audio_path: Path, output_path: Path, duration: float,
+) -> None:
+    """Extract the ambient background noise from an audio file.
+
+    Finds the quietest 100ms segment by scanning with small windows,
+    then loops it to fill the requested duration.
+    """
+    import numpy as np
+    import soundfile as sf_read
+
+    data, sr = sf_read.read(str(audio_path), dtype="float32")
+    window_size = int(0.1 * sr)
+    if len(data) < window_size:
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "lavfi", "-t", str(duration),
+             "-i", f"anullsrc=r={sr}:cl=mono", "-c:a", "pcm_s16le",
+             str(output_path)],
+            check=True, capture_output=True,
+        )
+        return
+
+    min_rms = float("inf")
+    best_start = 0
+    for start in range(0, len(data) - window_size, window_size // 2):
+        window = data[start:start + window_size]
+        rms = float(np.sqrt(np.mean(window ** 2)))
+        if rms < min_rms:
+            min_rms = rms
+            best_start = start
+
+    quiet_segment = data[best_start:best_start + window_size]
+    noise_sample = output_path.parent / "noise_sample.wav"
+    sf_read.write(str(noise_sample), quiet_segment, sr)
+
+    subprocess.run(
+        ["ffmpeg", "-y", "-stream_loop", "-1",
+         "-i", str(noise_sample),
+         "-t", str(duration), "-c:a", "pcm_s16le",
+         str(output_path)],
+        check=True, capture_output=True,
+    )
+
+
 def assemble_video(
     slide_images: list[Path],
     audio_clips: list[Path],
     slides: list[tuple[int, str]],
     output_path: Path,
+    pause: float = 1.0,
     speed: float | None = None,
     click_sound: Path | None = None,
 ) -> None:
-    """Stitch slide images and audio clips into a video with pauses between slides."""
+    """Stitch slide images and audio clips into a video.
+
+    Each slide transition is: [click sound] -> [pause with ambient noise] -> [narration]
+    The click has a press and release ~75ms apart. The slide image changes between them.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
 
@@ -328,45 +377,80 @@ def assemble_video(
                 sped_clips.append(sped)
             audio_clips = sped_clips
 
+        # Extract ambient noise from first clip for pause fill
+        ambient_path = tmpdir / "ambient.wav"
+        _extract_ambient_noise(audio_clips[0], ambient_path, pause)
+
+        # If click sound provided, split it: press (~first 75ms) and release (rest)
+        # The slide change happens between press and release
+        click_release_path = None
+        if click_sound:
+            click_release_path = tmpdir / "click_release.wav"
+            subprocess.run(
+                ["ffmpeg", "-y", "-i", str(click_sound),
+                 "-ss", "0.075", "-c:a", "pcm_s16le",
+                 str(click_release_path)],
+                check=True, capture_output=True,
+            )
+
         segment_paths = []
         total_duration = 0.0
 
         for i, (audio_clip, (slide_num, _)) in enumerate(zip(audio_clips, slides)):
             slide_img = slide_images[slide_num - 1]
 
-            # Mix click sound into the beginning of the audio if provided
-            if click_sound and i > 0:
-                mixed_audio = tmpdir / f"clicked_{i:02d}.wav"
+            # Build the audio: [click_release + ambient_pause] + [narration]
+            if click_release_path and i > 0:
+                # Overlay click release on the ambient pause, then concat with narration
+                click_on_ambient = tmpdir / f"click_ambient_{i:02d}.wav"
                 subprocess.run(
                     ["ffmpeg", "-y",
-                     "-i", str(audio_clip), "-i", str(click_sound),
+                     "-i", str(ambient_path), "-i", str(click_release_path),
                      "-filter_complex",
-                     "[1:a]apad=whole_dur=0[click];[0:a][click]amix=inputs=2:duration=first",
-                     "-c:a", "pcm_s16le", str(mixed_audio)],
+                     "[1:a]apad=whole_dur=0[click];"
+                     "[0:a][click]amix=inputs=2:duration=first",
+                     "-c:a", "pcm_s16le", str(click_on_ambient)],
                     check=True, capture_output=True,
                 )
-                audio_clip = mixed_audio
+                padded_audio = tmpdir / f"padded_{i:02d}.wav"
+                subprocess.run(
+                    ["ffmpeg", "-y",
+                     "-i", str(click_on_ambient), "-i", str(audio_clip),
+                     "-filter_complex", "[0:a][1:a]concat=n=2:v=0:a=1",
+                     "-c:a", "pcm_s16le", str(padded_audio)],
+                    check=True, capture_output=True,
+                )
+            else:
+                # First slide or no click: just ambient pause + narration
+                padded_audio = tmpdir / f"padded_{i:02d}.wav"
+                subprocess.run(
+                    ["ffmpeg", "-y",
+                     "-i", str(ambient_path), "-i", str(audio_clip),
+                     "-filter_complex", "[0:a][1:a]concat=n=2:v=0:a=1",
+                     "-c:a", "pcm_s16le", str(padded_audio)],
+                    check=True, capture_output=True,
+                )
 
-            duration = get_audio_duration(audio_clip)
-            segment_duration = duration
+            duration = get_audio_duration(padded_audio)
 
             segment_path = tmpdir / f"segment_{i:02d}.mp4"
             subprocess.run(
                 ["ffmpeg", "-y",
                  "-loop", "1", "-i", str(slide_img),
-                 "-i", str(audio_clip),
+                 "-i", str(padded_audio),
                  "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                  "-c:v", "libx264", "-tune", "stillimage",
                  "-c:a", "aac", "-b:a", "192k",
                  "-pix_fmt", "yuv420p",
-                 "-t", str(segment_duration),
+                 "-t", str(duration),
                  "-shortest",
                  str(segment_path)],
                 check=True, capture_output=True,
             )
             segment_paths.append(segment_path)
-            total_duration += segment_duration
-            print(f"  Slide {slide_num}: {duration:.1f}s")
+            total_duration += duration
+            narration_dur = get_audio_duration(audio_clip)
+            print(f"  Slide {slide_num}: {narration_dur:.1f}s + {pause}s pause")
 
         # Concatenate all segments
         concat_file = tmpdir / "concat.txt"
@@ -401,6 +485,10 @@ def main():
     parser.add_argument(
         "--output", type=Path, default=Path("output.mp4"),
         help="Output video path",
+    )
+    parser.add_argument(
+        "--pause", type=float, default=1.0,
+        help="Seconds of pause before narration on each slide (default: 1.0)",
     )
     parser.add_argument(
         "--device", type=str, default="cuda",
@@ -507,13 +595,13 @@ def main():
 
     if args.srt:
         print("Generating subtitles...")
-        generate_srt(slides, audio_clips, args.srt)
+        generate_srt(slides, audio_clips, args.srt, pause=args.pause)
         print()
 
     print("Assembling video...")
     assemble_video(
         slide_images, audio_clips, slides, args.output,
-        speed=args.speed, click_sound=args.click_sound,
+        pause=args.pause, speed=args.speed, click_sound=args.click_sound,
     )
     print(f"\nDone! Saved to {args.output}")
 
