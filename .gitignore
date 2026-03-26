@@ -2,5 +2,9 @@
 .venv*/
 __pycache__/
 *.pyc
-output.mp4
+*.mp4
 *.egg-info/
+audio_clips/
+slide_images/
+video_segments/
+voice_sample*
