@@ -10,6 +10,6 @@ dependencies = [
     "torchaudio",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 chatterbox = ["chatterbox-tts"]
 qwen3 = ["qwen-tts"]
