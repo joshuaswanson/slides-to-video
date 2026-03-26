@@ -331,10 +331,10 @@ def _generate_matching_noise(
             rms = float(np.sqrt(np.mean(window ** 2)))
             min_rms_values.append(rms)
 
-    # Use the median of the bottom 5% as the target noise level
-    min_rms_values.sort()
-    bottom_5pct = min_rms_values[:max(1, len(min_rms_values) // 20)]
-    target_rms = float(np.median(bottom_5pct))
+    # Use the 25th percentile RMS as the noise floor estimate. The very
+    # quietest windows are near-silence between words, but the noise floor
+    # during speech is higher. The 25th percentile captures that.
+    target_rms = float(np.percentile(min_rms_values, 25))
 
     # Generate pink noise (1/f spectrum) at the target RMS level
     n_samples = int(duration * sr)
