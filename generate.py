@@ -386,11 +386,12 @@ def main():
     print()
 
     if args.preview:
+        import soundfile as sf_read
         print("Preview mode: skipping video assembly.")
         print("Audio clips:")
         for clip in audio_clips:
-            duration = get_audio_duration(clip)
-            print(f"  {clip.name}: {duration:.1f}s")
+            info = sf_read.info(str(clip))
+            print(f"  {clip.name}: {info.duration:.1f}s")
         return
 
     print("Extracting slide images...")
