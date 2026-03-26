@@ -341,6 +341,15 @@ def _generate_ambient_pause(
     trim_end = max(trim_end, int(0.1 * sr))
     clean = data[:trim_end]
 
+    # Crossfade the loop point: blend the last 10ms into the first 10ms
+    # so there's no click when looping
+    fade_samples = int(0.01 * sr)
+    if len(clean) > fade_samples * 2:
+        fade_in = np.linspace(0, 1, fade_samples, dtype=np.float32)
+        fade_out = np.linspace(1, 0, fade_samples, dtype=np.float32)
+        clean[:fade_samples] *= fade_in
+        clean[-fade_samples:] *= fade_out
+
     clean_path = output_path.parent / "ambient_clean.wav"
     sf_read.write(str(clean_path), clean, sr)
 
