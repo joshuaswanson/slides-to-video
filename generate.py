@@ -328,16 +328,18 @@ def _extract_ambient_noise(
         )
         return
 
-    min_rms = float("inf")
-    best_start = 0
+    # Score all windows by RMS, pick the 5 quietest and average them
+    # to smooth out any one-off artifacts
+    windows = []
     for start in range(0, len(data) - window_size, window_size // 2):
         window = data[start:start + window_size]
         rms = float(np.sqrt(np.mean(window ** 2)))
-        if rms < min_rms:
-            min_rms = rms
-            best_start = start
-
-    quiet_segment = data[best_start:best_start + window_size]
+        windows.append((rms, start))
+    windows.sort()
+    top_k = min(5, len(windows))
+    quiet_segment = np.mean(
+        [data[s:s + window_size] for _, s in windows[:top_k]], axis=0,
+    ).astype(np.float32)
     noise_sample = output_path.parent / "noise_sample.wav"
     sf_read.write(str(noise_sample), quiet_segment, sr)
 
@@ -399,9 +401,8 @@ def assemble_video(
         for i, (audio_clip, (slide_num, _)) in enumerate(zip(audio_clips, slides)):
             slide_img = slide_images[slide_num - 1]
 
-            # Build the audio: [click_release + ambient_pause] + [narration]
+            # Build audio: [click + ambient pause] -> [narration] -> [ambient pause]
             if click_release_path and i > 0:
-                # Overlay click release on the ambient pause, then concat with narration
                 click_on_ambient = tmpdir / f"click_ambient_{i:02d}.wav"
                 subprocess.run(
                     ["ffmpeg", "-y",
@@ -416,17 +417,20 @@ def assemble_video(
                 subprocess.run(
                     ["ffmpeg", "-y",
                      "-i", str(click_on_ambient), "-i", str(audio_clip),
-                     "-filter_complex", "[0:a][1:a]concat=n=2:v=0:a=1",
+                     "-i", str(ambient_path),
+                     "-filter_complex",
+                     "[0:a][1:a][2:a]concat=n=3:v=0:a=1",
                      "-c:a", "pcm_s16le", str(padded_audio)],
                     check=True, capture_output=True,
                 )
             else:
-                # First slide or no click: just ambient pause + narration
                 padded_audio = tmpdir / f"padded_{i:02d}.wav"
                 subprocess.run(
                     ["ffmpeg", "-y",
                      "-i", str(ambient_path), "-i", str(audio_clip),
-                     "-filter_complex", "[0:a][1:a]concat=n=2:v=0:a=1",
+                     "-i", str(ambient_path),
+                     "-filter_complex",
+                     "[0:a][1:a][2:a]concat=n=3:v=0:a=1",
                      "-c:a", "pcm_s16le", str(padded_audio)],
                     check=True, capture_output=True,
                 )
