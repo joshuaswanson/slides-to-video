@@ -46,15 +46,57 @@ def parse_script(script_path: Path) -> list[tuple[int, str]]:
     return slides
 
 
+def parse_slide_range(spec: str, max_slide: int) -> set[int]:
+    """Parse a slide range specification like '1,3,5-7' into a set of ints."""
+    result = set()
+    for part in spec.split(","):
+        part = part.strip()
+        if "-" in part:
+            start, end = part.split("-", 1)
+            result.update(range(int(start), int(end) + 1))
+        else:
+            result.add(int(part))
+    return result
+
+
 def convert_voice_sample(voice_path: Path, output_path: Path) -> Path:
     """Convert voice sample to WAV if needed."""
     if voice_path.suffix == ".wav":
         return voice_path
     subprocess.run(
-        ["ffmpeg", "-y", "-i", str(voice_path), "-ar", "24000", "-ac", "1", str(output_path)],
-        check=True,
-        capture_output=True,
+        ["ffmpeg", "-y", "-i", str(voice_path), "-ar", "24000", "-ac", "1",
+         str(output_path)],
+        check=True, capture_output=True,
     )
+    return output_path
+
+
+def merge_voice_samples(voice_paths: list[Path], output_path: Path) -> Path:
+    """Concatenate multiple voice samples into one WAV file for better cloning."""
+    if len(voice_paths) == 1:
+        return convert_voice_sample(voice_paths[0], output_path)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+        converted = []
+        for i, vp in enumerate(voice_paths):
+            conv = tmpdir / f"voice_{i:02d}.wav"
+            subprocess.run(
+                ["ffmpeg", "-y", "-i", str(vp), "-ar", "24000", "-ac", "1",
+                 str(conv)],
+                check=True, capture_output=True,
+            )
+            converted.append(conv)
+
+        concat_file = tmpdir / "concat.txt"
+        concat_file.write_text(
+            "\n".join(f"file '{p}'" for p in converted)
+        )
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
+             "-i", str(concat_file), "-c", "copy", str(output_path)],
+            check=True, capture_output=True,
+        )
     return output_path
 
 
@@ -63,6 +105,7 @@ def generate_audio_clips(
     engine: TTSEngine,
     voice_wav_path: Path,
     output_dir: Path,
+    language: str = "en",
 ) -> list[Path]:
     """Generate TTS audio for each slide using the cloned voice."""
     output_dir.mkdir(exist_ok=True)
@@ -74,10 +117,22 @@ def generate_audio_clips(
             clip_paths.append(out_path)
             continue
         print(f"  Slide {slide_num}: generating...")
-        duration = engine.generate_to_file(text, voice_wav_path, out_path)
+        duration = engine.generate_to_file(
+            text, voice_wav_path, out_path, language=language,
+        )
         print(f"  Slide {slide_num}: {duration:.1f}s")
         clip_paths.append(out_path)
     return clip_paths
+
+
+def apply_speed(audio_path: Path, speed: float, output_path: Path) -> None:
+    """Adjust playback speed of an audio file using ffmpeg atempo filter."""
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", str(audio_path),
+         "-filter:a", f"atempo={speed}",
+         "-c:a", "pcm_s16le", str(output_path)],
+        check=True, capture_output=True,
+    )
 
 
 def extract_slide_images(pdf_path: Path, output_dir: Path) -> list[Path]:
@@ -89,8 +144,7 @@ def extract_slide_images(pdf_path: Path, output_dir: Path) -> list[Path]:
         return existing
     subprocess.run(
         ["pdftoppm", "-png", "-r", "300", str(pdf_path), str(output_dir / "slide")],
-        check=True,
-        capture_output=True,
+        check=True, capture_output=True,
     )
     return sorted(output_dir.glob("slide-*.png"))
 
@@ -105,16 +159,62 @@ def get_audio_duration(audio_path: Path) -> float:
     return float(result.stdout.strip())
 
 
+def format_srt_time(seconds: float) -> str:
+    """Format seconds as SRT timestamp (HH:MM:SS,mmm)."""
+    h = int(seconds // 3600)
+    m = int((seconds % 3600) // 60)
+    s = int(seconds % 60)
+    ms = int((seconds % 1) * 1000)
+    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
+
+
+def generate_srt(
+    slides: list[tuple[int, str]],
+    audio_clips: list[Path],
+    pause: float,
+    output_path: Path,
+) -> None:
+    """Generate an SRT subtitle file from slides and their audio durations."""
+    entries = []
+    current_time = 0.0
+
+    for i, ((slide_num, text), audio_clip) in enumerate(zip(slides, audio_clips)):
+        start_time = current_time + pause
+        duration = get_audio_duration(audio_clip)
+        end_time = start_time + duration
+
+        entries.append(
+            f"{i + 1}\n"
+            f"{format_srt_time(start_time)} --> {format_srt_time(end_time)}\n"
+            f"{text}\n"
+        )
+        current_time = end_time
+
+    output_path.write_text("\n".join(entries))
+    print(f"  Saved subtitles to {output_path}")
+
+
 def assemble_video(
     slide_images: list[Path],
     audio_clips: list[Path],
     slides: list[tuple[int, str]],
     output_path: Path,
     pause: float,
+    speed: float | None = None,
 ) -> None:
     """Stitch slide images and audio clips into a video with pauses between slides."""
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
+
+        # Optionally adjust audio speed
+        if speed is not None and speed != 1.0:
+            print(f"  Adjusting audio speed: {speed}x")
+            sped_clips = []
+            for i, clip in enumerate(audio_clips):
+                sped = tmpdir / f"speed_{i:02d}.wav"
+                apply_speed(clip, speed, sped)
+                sped_clips.append(sped)
+            audio_clips = sped_clips
 
         # Generate a silence file for the pause
         silence_path = tmpdir / "silence.wav"
@@ -176,20 +276,64 @@ def assemble_video(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate a narrated presentation video from slides, a script, and a voice sample."
+        description="Generate a narrated presentation video from slides, a script, "
+        "and a voice sample."
     )
-    parser.add_argument("--slides", type=Path, required=True, help="Path to slides PDF")
-    parser.add_argument("--script", type=Path, required=True, help="Path to narration script (markdown)")
-    parser.add_argument("--voice", type=Path, required=True, help="Path to voice sample (any audio format)")
-    parser.add_argument("--output", type=Path, default=Path("output.mp4"), help="Output video path")
-    parser.add_argument("--pause", type=float, default=1.0, help="Seconds of silence before narration on each slide")
-    parser.add_argument("--device", type=str, default="cuda", help="PyTorch device for TTS model")
+    parser.add_argument(
+        "--slides", type=Path, required=True, help="Path to slides PDF",
+    )
+    parser.add_argument(
+        "--script", type=Path, required=True,
+        help="Path to narration script (markdown)",
+    )
+    parser.add_argument(
+        "--voice", type=Path, required=True, nargs="+",
+        help="Path to voice sample(s). Multiple files are merged for better cloning.",
+    )
+    parser.add_argument(
+        "--output", type=Path, default=Path("output.mp4"),
+        help="Output video path",
+    )
+    parser.add_argument(
+        "--pause", type=float, default=1.0,
+        help="Seconds of silence before narration on each slide",
+    )
+    parser.add_argument(
+        "--device", type=str, default="cuda",
+        help="PyTorch device for TTS model",
+    )
     parser.add_argument(
         "--tts-engine", type=str, default="chatterbox", choices=sorted(ENGINES),
         help="TTS engine for voice cloning (default: chatterbox)",
     )
-    parser.add_argument("--cache-dir", type=Path, default=Path(".cache"), help="Directory for intermediate files")
-    parser.add_argument("--regenerate", action="store_true", help="Regenerate all audio clips (ignore cache)")
+    parser.add_argument(
+        "--language", type=str, default="en",
+        help="Language code for TTS, e.g. en, zh, fr, de, es (default: en)",
+    )
+    parser.add_argument(
+        "--speed", type=float, default=None,
+        help="Playback speed multiplier for narration, e.g. 1.2 for 20%% faster",
+    )
+    parser.add_argument(
+        "--only-slides", type=str, default=None, metavar="RANGE",
+        help="Only process specific slides, e.g. '3-7' or '1,3,5-7'",
+    )
+    parser.add_argument(
+        "--preview", action="store_true",
+        help="Generate audio only, skip video assembly (for quick iteration)",
+    )
+    parser.add_argument(
+        "--srt", type=Path, default=None, metavar="PATH",
+        help="Export SRT subtitles to the given path",
+    )
+    parser.add_argument(
+        "--cache-dir", type=Path, default=Path(".cache"),
+        help="Directory for intermediate files",
+    )
+    parser.add_argument(
+        "--regenerate", action="store_true",
+        help="Regenerate all audio clips (ignore cache)",
+    )
     parser.add_argument(
         "--regenerate-slide", type=int, nargs="+", metavar="N",
         help="Regenerate audio for specific slide(s) only, e.g. --regenerate-slide 3 7",
@@ -214,9 +358,20 @@ def main():
     slides = parse_script(args.script)
     print(f"  Found {len(slides)} slides\n")
 
-    print("Converting voice sample...")
-    voice_wav = convert_voice_sample(args.voice, args.cache_dir / "voice_converted.wav")
+    # Filter to requested slides
+    if args.only_slides:
+        max_slide = max(n for n, _ in slides)
+        requested = parse_slide_range(args.only_slides, max_slide)
+        slides = [(n, t) for n, t in slides if n in requested]
+        print(f"  Filtered to {len(slides)} slides: {sorted(n for n, _ in slides)}\n")
+
+    print("Preparing voice sample...")
     args.cache_dir.mkdir(exist_ok=True)
+    voice_wav = merge_voice_samples(
+        args.voice, args.cache_dir / "voice_merged.wav",
+    )
+    if len(args.voice) > 1:
+        print(f"  Merged {len(args.voice)} voice samples")
     print()
 
     print(f"Loading TTS engine ({args.tts_engine})...")
@@ -225,15 +380,33 @@ def main():
     print()
 
     print("Generating audio clips...")
-    audio_clips = generate_audio_clips(slides, engine, voice_wav, audio_dir)
+    audio_clips = generate_audio_clips(
+        slides, engine, voice_wav, audio_dir, language=args.language,
+    )
     print()
+
+    if args.preview:
+        print("Preview mode: skipping video assembly.")
+        print("Audio clips:")
+        for clip in audio_clips:
+            duration = get_audio_duration(clip)
+            print(f"  {clip.name}: {duration:.1f}s")
+        return
 
     print("Extracting slide images...")
     slide_images = extract_slide_images(args.slides, slides_dir)
     print()
 
+    if args.srt:
+        print("Generating subtitles...")
+        generate_srt(slides, audio_clips, args.pause, args.srt)
+        print()
+
     print("Assembling video...")
-    assemble_video(slide_images, audio_clips, slides, args.output, args.pause)
+    assemble_video(
+        slide_images, audio_clips, slides, args.output, args.pause,
+        speed=args.speed,
+    )
     print(f"\nDone! Saved to {args.output}")
 
 

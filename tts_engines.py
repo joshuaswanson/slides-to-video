@@ -21,17 +21,29 @@ class TTSEngine(abc.ABC):
         """Load the model onto the given device."""
 
     @abc.abstractmethod
-    def generate(self, text: str, voice_wav_path: Path) -> tuple[np.ndarray, int]:
+    def generate(
+        self, text: str, voice_wav_path: Path, language: str = "en",
+    ) -> tuple[np.ndarray, int]:
         """Generate speech from text, cloning the voice in voice_wav_path.
 
         Returns (waveform as numpy array, sample_rate).
         """
 
-    def generate_to_file(self, text: str, voice_wav_path: Path, output_path: Path) -> float:
+    def generate_to_file(
+        self, text: str, voice_wav_path: Path, output_path: Path,
+        language: str = "en",
+    ) -> float:
         """Generate speech and save to a WAV file. Returns duration in seconds."""
-        wav, sr = self.generate(text, voice_wav_path)
+        wav, sr = self.generate(text, voice_wav_path, language=language)
         sf.write(str(output_path), wav, sr)
         return len(wav) / sr
+
+
+LANGUAGE_MAP_QWEN3 = {
+    "en": "English", "zh": "Chinese", "ja": "Japanese", "ko": "Korean",
+    "fr": "French", "de": "German", "es": "Spanish", "ar": "Arabic",
+    "ru": "Russian", "pt": "Portuguese",
+}
 
 
 class ChatterboxEngine(TTSEngine):
@@ -47,7 +59,9 @@ class ChatterboxEngine(TTSEngine):
         from chatterbox.tts import ChatterboxTTS
         self.model = ChatterboxTTS.from_pretrained(device)
 
-    def generate(self, text: str, voice_wav_path: Path) -> tuple[np.ndarray, int]:
+    def generate(
+        self, text: str, voice_wav_path: Path, language: str = "en",
+    ) -> tuple[np.ndarray, int]:
         wav_tensor = self.model.generate(text, audio_prompt_path=str(voice_wav_path))
         sr = self.model.sr
         wav = wav_tensor.squeeze().cpu().numpy()
@@ -73,10 +87,13 @@ class Qwen3TTSEngine(TTSEngine):
             dtype=torch.bfloat16,
         )
 
-    def generate(self, text: str, voice_wav_path: Path) -> tuple[np.ndarray, int]:
+    def generate(
+        self, text: str, voice_wav_path: Path, language: str = "en",
+    ) -> tuple[np.ndarray, int]:
+        lang_name = LANGUAGE_MAP_QWEN3.get(language, "English")
         wavs, sr = self.model.generate_voice_clone(
             text=text,
-            language="English",
+            language=lang_name,
             ref_audio=str(voice_wav_path),
         )
         return wavs[0], sr
