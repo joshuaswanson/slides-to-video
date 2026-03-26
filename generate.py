@@ -306,49 +306,50 @@ def generate_srt(
     print(f"  Saved subtitles to {output_path}")
 
 
-def _extract_ambient_noise(
+def _generate_matching_noise(
     audio_paths: list[Path], output_path: Path, duration: float,
 ) -> None:
-    """Extract ambient background noise by finding the quietest window across all clips."""
+    """Generate noise that matches the background noise level of the audio clips.
+
+    Measures the noise floor from the quietest parts of the audio, then
+    generates pink noise at that exact level.
+    """
     import numpy as np
     import soundfile as sf_read
 
-    best_rms = float("inf")
-    best_segment = None
-    best_sr = 24000
-
+    # Measure noise floor RMS across all clips
+    min_rms_values = []
+    sr = 24000
     for audio_path in audio_paths:
-        data, sr = sf_read.read(str(audio_path), dtype="float32")
-        best_sr = sr
+        data, file_sr = sf_read.read(str(audio_path), dtype="float32")
+        sr = file_sr
         window_size = int(0.1 * sr)
         if len(data) < window_size:
             continue
         for start in range(0, len(data) - window_size, window_size // 2):
             window = data[start:start + window_size]
             rms = float(np.sqrt(np.mean(window ** 2)))
-            if rms < best_rms:
-                best_rms = rms
-                best_segment = window.copy()
+            min_rms_values.append(rms)
 
-    if best_segment is None:
-        subprocess.run(
-            ["ffmpeg", "-y", "-f", "lavfi", "-t", str(duration),
-             "-i", f"anullsrc=r={best_sr}:cl=mono", "-c:a", "pcm_s16le",
-             str(output_path)],
-            check=True, capture_output=True,
-        )
-        return
+    # Use the median of the bottom 5% as the target noise level
+    min_rms_values.sort()
+    bottom_5pct = min_rms_values[:max(1, len(min_rms_values) // 20)]
+    target_rms = float(np.median(bottom_5pct))
 
-    noise_sample = output_path.parent / "noise_sample.wav"
-    sf_read.write(str(noise_sample), best_segment, best_sr)
+    # Generate pink noise (1/f spectrum) at the target RMS level
+    n_samples = int(duration * sr)
+    white = np.random.randn(n_samples).astype(np.float32)
+    # Simple pink noise approximation via cumulative filter
+    b = np.array([0.049922035, -0.095993537, 0.050612699, -0.004709510])
+    a = np.array([1.0, -2.494956002, 2.017265875, -0.522189400])
+    from scipy.signal import lfilter
+    pink = lfilter(b, a, white).astype(np.float32)
+    # Normalize to target RMS
+    current_rms = float(np.sqrt(np.mean(pink ** 2)))
+    if current_rms > 0:
+        pink = pink * (target_rms / current_rms)
 
-    subprocess.run(
-        ["ffmpeg", "-y", "-stream_loop", "-1",
-         "-i", str(noise_sample),
-         "-t", str(duration), "-c:a", "pcm_s16le",
-         str(output_path)],
-        check=True, capture_output=True,
-    )
+    sf_read.write(str(output_path), pink, sr)
 
 
 def assemble_video(
@@ -380,7 +381,7 @@ def assemble_video(
 
         # Extract ambient noise from first clip for pause fill
         ambient_path = tmpdir / "ambient.wav"
-        _extract_ambient_noise(list(audio_clips), ambient_path, pause)
+        _generate_matching_noise(list(audio_clips), ambient_path, pause)
 
         # Split click into press (down) and release (up), ~75ms boundary.
         # Down plays at end of previous slide, up plays at start of new slide.
