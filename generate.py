@@ -326,7 +326,7 @@ def _generate_matching_noise(
         window = data[start:start + window_size]
         rms_values.append(float(np.sqrt(np.mean(window ** 2))))
 
-    target_rms = float(np.percentile(rms_values, 25)) if rms_values else 0.004
+    target_rms = float(np.percentile(rms_values, 5)) if rms_values else 0.004
 
     # Generate pink noise (1/f spectrum)
     n_samples = int(duration * sr)
