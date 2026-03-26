@@ -248,16 +248,18 @@ def assemble_video(
                 sped_clips.append(sped)
             audio_clips = sped_clips
 
-        # Extract ambient noise from the tail of the first audio clip and loop
-        # it for pauses, so transitions don't have jarring dead silence.
+        # Extract the background noise/hum from the first audio clip using
+        # ffmpeg's noise filter in "output noise" mode, then loop it for
+        # pauses so transitions don't have jarring dead silence.
         noise_sample_path = tmpdir / "noise_sample.wav"
         silence_path = tmpdir / "silence.wav"
         subprocess.run(
-            ["ffmpeg", "-y", "-sseof", "-0.3", "-i", str(audio_clips[0]),
+            ["ffmpeg", "-y", "-i", str(audio_clips[0]),
+             "-af", "afftdn=noise_type=white:output_mode=noise",
              "-c:a", "pcm_s16le", str(noise_sample_path)],
             check=True, capture_output=True,
         )
-        # Loop the noise sample to fill the pause duration
+        # Loop the extracted noise to fill the pause duration
         subprocess.run(
             ["ffmpeg", "-y", "-stream_loop", "-1",
              "-i", str(noise_sample_path),
