@@ -1,10 +1,10 @@
 """Generate a narrated presentation video from slides, a script, and a voice sample.
 
 Usage:
-    python generate.py --slides presentation.pdf --script script.md --voice voice.m4a
+    uv run generate.py --slides presentation.pdf --script script.md --voice voice.m4a
 
 Requires:
-    - A GPU with CUDA support (for Chatterbox TTS voice cloning)
+    - A GPU with CUDA support (for TTS voice cloning)
     - ffmpeg and pdftoppm installed
 
 The script should be a markdown file with slide sections separated by '---':
@@ -24,8 +24,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-import torchaudio
-from chatterbox.tts import ChatterboxTTS
+from tts_engines import TTSEngine, get_engine, ENGINES
 
 
 def parse_script(script_path: Path) -> list[tuple[int, str]]:
@@ -61,7 +60,7 @@ def convert_voice_sample(voice_path: Path, output_path: Path) -> Path:
 
 def generate_audio_clips(
     slides: list[tuple[int, str]],
-    model: ChatterboxTTS,
+    engine: TTSEngine,
     voice_wav_path: Path,
     output_dir: Path,
 ) -> list[Path]:
@@ -75,9 +74,7 @@ def generate_audio_clips(
             clip_paths.append(out_path)
             continue
         print(f"  Slide {slide_num}: generating...")
-        wav = model.generate(text, audio_prompt_path=str(voice_wav_path))
-        torchaudio.save(str(out_path), wav, model.sr)
-        duration = wav.shape[1] / model.sr
+        duration = engine.generate_to_file(text, voice_wav_path, out_path)
         print(f"  Slide {slide_num}: {duration:.1f}s")
         clip_paths.append(out_path)
     return clip_paths
@@ -187,8 +184,16 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("output.mp4"), help="Output video path")
     parser.add_argument("--pause", type=float, default=1.0, help="Seconds of silence before narration on each slide")
     parser.add_argument("--device", type=str, default="cuda", help="PyTorch device for TTS model")
+    parser.add_argument(
+        "--tts-engine", type=str, default="chatterbox", choices=sorted(ENGINES),
+        help="TTS engine for voice cloning (default: chatterbox)",
+    )
     parser.add_argument("--cache-dir", type=Path, default=Path(".cache"), help="Directory for intermediate files")
     parser.add_argument("--regenerate", action="store_true", help="Regenerate all audio clips (ignore cache)")
+    parser.add_argument(
+        "--regenerate-slide", type=int, nargs="+", metavar="N",
+        help="Regenerate audio for specific slide(s) only, e.g. --regenerate-slide 3 7",
+    )
     args = parser.parse_args()
 
     audio_dir = args.cache_dir / "audio_clips"
@@ -198,6 +203,12 @@ def main():
         import shutil
         if audio_dir.exists():
             shutil.rmtree(audio_dir)
+    elif args.regenerate_slide:
+        for slide_num in args.regenerate_slide:
+            cached = audio_dir / f"slide_{slide_num:02d}.wav"
+            if cached.exists():
+                cached.unlink()
+                print(f"Cleared cached audio for slide {slide_num}")
 
     print("Parsing script...")
     slides = parse_script(args.script)
@@ -208,12 +219,13 @@ def main():
     args.cache_dir.mkdir(exist_ok=True)
     print()
 
-    print("Loading TTS model...")
-    model = ChatterboxTTS.from_pretrained(args.device)
+    print(f"Loading TTS engine ({args.tts_engine})...")
+    engine = get_engine(args.tts_engine)
+    engine.load(args.device)
     print()
 
     print("Generating audio clips...")
-    audio_clips = generate_audio_clips(slides, model, voice_wav, audio_dir)
+    audio_clips = generate_audio_clips(slides, engine, voice_wav, audio_dir)
     print()
 
     print("Extracting slide images...")
