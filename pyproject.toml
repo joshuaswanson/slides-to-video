@@ -13,4 +13,3 @@ dependencies = [
 [project.optional-dependencies]
 chatterbox = ["chatterbox-tts"]
 qwen3 = ["qwen-tts"]
-all = ["chatterbox-tts", "qwen-tts"]
