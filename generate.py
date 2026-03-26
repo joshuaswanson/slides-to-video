@@ -383,15 +383,23 @@ def assemble_video(
         ambient_path = tmpdir / "ambient.wav"
         _extract_ambient_noise(audio_clips[0], ambient_path, pause)
 
-        # If click sound provided, split it: press (~first 75ms) and release (rest)
-        # The slide change happens between press and release
-        click_release_path = None
+        # Split click into press (down) and release (up), ~75ms boundary.
+        # Down plays at end of previous slide, up plays at start of new slide.
+        click_down_path = None
+        click_up_path = None
         if click_sound:
-            click_release_path = tmpdir / "click_release.wav"
+            click_down_path = tmpdir / "click_down.wav"
+            click_up_path = tmpdir / "click_up.wav"
             subprocess.run(
                 ["ffmpeg", "-y", "-i", str(click_sound),
-                 "-ss", "0.075", "-c:a", "pcm_s16le",
-                 str(click_release_path)],
+                 "-t", "0.075", "-ar", "24000", "-ac", "1",
+                 "-c:a", "pcm_s16le", str(click_down_path)],
+                check=True, capture_output=True,
+            )
+            subprocess.run(
+                ["ffmpeg", "-y", "-i", str(click_sound),
+                 "-ss", "0.075", "-ar", "24000", "-ac", "1",
+                 "-c:a", "pcm_s16le", str(click_up_path)],
                 check=True, capture_output=True,
             )
 
@@ -401,39 +409,59 @@ def assemble_video(
         for i, (audio_clip, (slide_num, _)) in enumerate(zip(audio_clips, slides)):
             slide_img = slide_images[slide_num - 1]
 
-            # Build audio: [click + ambient pause] -> [narration] -> [ambient pause]
-            if click_release_path and i > 0:
-                click_on_ambient = tmpdir / f"click_ambient_{i:02d}.wav"
+            # Build pre-pause: ambient with click_up overlaid (except slide 1)
+            pre_pause = tmpdir / f"pre_{i:02d}.wav"
+            if click_up_path and i > 0:
                 subprocess.run(
                     ["ffmpeg", "-y",
-                     "-i", str(ambient_path), "-i", str(click_release_path),
+                     "-i", str(ambient_path), "-i", str(click_up_path),
                      "-filter_complex",
                      "[1:a]apad=whole_dur=0[click];"
                      "[0:a][click]amix=inputs=2:duration=first",
-                     "-c:a", "pcm_s16le", str(click_on_ambient)],
-                    check=True, capture_output=True,
-                )
-                padded_audio = tmpdir / f"padded_{i:02d}.wav"
-                subprocess.run(
-                    ["ffmpeg", "-y",
-                     "-i", str(click_on_ambient), "-i", str(audio_clip),
-                     "-i", str(ambient_path),
-                     "-filter_complex",
-                     "[0:a][1:a][2:a]concat=n=3:v=0:a=1",
-                     "-c:a", "pcm_s16le", str(padded_audio)],
+                     "-c:a", "pcm_s16le", str(pre_pause)],
                     check=True, capture_output=True,
                 )
             else:
-                padded_audio = tmpdir / f"padded_{i:02d}.wav"
                 subprocess.run(
-                    ["ffmpeg", "-y",
-                     "-i", str(ambient_path), "-i", str(audio_clip),
-                     "-i", str(ambient_path),
-                     "-filter_complex",
-                     "[0:a][1:a][2:a]concat=n=3:v=0:a=1",
-                     "-c:a", "pcm_s16le", str(padded_audio)],
+                    ["ffmpeg", "-y", "-i", str(ambient_path),
+                     "-c:a", "pcm_s16le", str(pre_pause)],
                     check=True, capture_output=True,
                 )
+
+            # Build post-pause: ambient with click_down overlaid at the end
+            # (except last slide)
+            is_last = i == len(audio_clips) - 1
+            post_pause = tmpdir / f"post_{i:02d}.wav"
+            if click_down_path and not is_last:
+                # Overlay click_down near the end of the ambient pause
+                click_offset = max(0, pause - 0.075)
+                subprocess.run(
+                    ["ffmpeg", "-y",
+                     "-i", str(ambient_path), "-i", str(click_down_path),
+                     "-filter_complex",
+                     f"[1:a]adelay={int(click_offset * 1000)}|{int(click_offset * 1000)},apad=whole_dur=0[click];"
+                     "[0:a][click]amix=inputs=2:duration=first",
+                     "-c:a", "pcm_s16le", str(post_pause)],
+                    check=True, capture_output=True,
+                )
+            else:
+                subprocess.run(
+                    ["ffmpeg", "-y", "-i", str(ambient_path),
+                     "-c:a", "pcm_s16le", str(post_pause)],
+                    check=True, capture_output=True,
+                )
+
+            # Concat: pre_pause + narration + post_pause
+            padded_audio = tmpdir / f"padded_{i:02d}.wav"
+            subprocess.run(
+                ["ffmpeg", "-y",
+                 "-i", str(pre_pause), "-i", str(audio_clip),
+                 "-i", str(post_pause),
+                 "-filter_complex",
+                 "[0:a][1:a][2:a]concat=n=3:v=0:a=1",
+                 "-c:a", "pcm_s16le", str(padded_audio)],
+                check=True, capture_output=True,
+            )
 
             duration = get_audio_duration(padded_audio)
 
