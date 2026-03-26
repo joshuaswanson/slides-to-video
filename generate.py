@@ -307,44 +307,33 @@ def generate_srt(
 
 
 def _generate_matching_noise(
-    audio_paths: list[Path], output_path: Path, duration: float,
+    audio_path: Path, output_path: Path, duration: float,
 ) -> None:
-    """Generate noise that matches the background noise level of the audio clips.
+    """Generate pink noise matching a specific audio clip's noise floor.
 
-    Measures the noise floor from the quietest parts of the audio, then
-    generates pink noise at that exact level.
+    Measures the noise floor from the 25th percentile RMS of the clip,
+    then generates pink noise at that level.
     """
     import numpy as np
     import soundfile as sf_read
+    from scipy.signal import lfilter
 
-    # Measure noise floor RMS across all clips
-    min_rms_values = []
-    sr = 24000
-    for audio_path in audio_paths:
-        data, file_sr = sf_read.read(str(audio_path), dtype="float32")
-        sr = file_sr
-        window_size = int(0.1 * sr)
-        if len(data) < window_size:
-            continue
-        for start in range(0, len(data) - window_size, window_size // 2):
-            window = data[start:start + window_size]
-            rms = float(np.sqrt(np.mean(window ** 2)))
-            min_rms_values.append(rms)
+    data, sr = sf_read.read(str(audio_path), dtype="float32")
+    window_size = int(0.1 * sr)
 
-    # Use the 25th percentile RMS as the noise floor estimate. The very
-    # quietest windows are near-silence between words, but the noise floor
-    # during speech is higher. The 25th percentile captures that.
-    target_rms = float(np.percentile(min_rms_values, 25))
+    rms_values = []
+    for start in range(0, len(data) - window_size, window_size // 2):
+        window = data[start:start + window_size]
+        rms_values.append(float(np.sqrt(np.mean(window ** 2))))
 
-    # Generate pink noise (1/f spectrum) at the target RMS level
+    target_rms = float(np.percentile(rms_values, 25)) if rms_values else 0.004
+
+    # Generate pink noise (1/f spectrum)
     n_samples = int(duration * sr)
     white = np.random.randn(n_samples).astype(np.float32)
-    # Simple pink noise approximation via cumulative filter
     b = np.array([0.049922035, -0.095993537, 0.050612699, -0.004709510])
     a = np.array([1.0, -2.494956002, 2.017265875, -0.522189400])
-    from scipy.signal import lfilter
     pink = lfilter(b, a, white).astype(np.float32)
-    # Normalize to target RMS
     current_rms = float(np.sqrt(np.mean(pink ** 2)))
     if current_rms > 0:
         pink = pink * (target_rms / current_rms)
@@ -379,9 +368,12 @@ def assemble_video(
                 sped_clips.append(sped)
             audio_clips = sped_clips
 
-        # Extract ambient noise from first clip for pause fill
-        ambient_path = tmpdir / "ambient.wav"
-        _generate_matching_noise(list(audio_clips), ambient_path, pause)
+        # Generate per-clip ambient noise for pauses
+        ambient_paths = []
+        for idx, clip in enumerate(audio_clips):
+            ap = tmpdir / f"ambient_{idx:02d}.wav"
+            _generate_matching_noise(clip, ap, pause)
+            ambient_paths.append(ap)
 
         # Split click into press (down) and release (up), ~75ms boundary.
         # Down plays at end of previous slide, up plays at start of new slide.
@@ -409,12 +401,13 @@ def assemble_video(
         for i, (audio_clip, (slide_num, _)) in enumerate(zip(audio_clips, slides)):
             slide_img = slide_images[slide_num - 1]
 
-            # Build pre-pause: ambient with click_up overlaid (except slide 1)
+            # Build pre-pause: ambient (matched to this clip) with click_up overlaid
+            pre_ambient = ambient_paths[i]
             pre_pause = tmpdir / f"pre_{i:02d}.wav"
             if click_up_path and i > 0:
                 subprocess.run(
                     ["ffmpeg", "-y",
-                     "-i", str(ambient_path), "-i", str(click_up_path),
+                     "-i", str(pre_ambient), "-i", str(click_up_path),
                      "-filter_complex",
                      "[1:a]apad=whole_dur=0[click];"
                      "[0:a][click]amix=inputs=2:duration=first",
@@ -423,21 +416,20 @@ def assemble_video(
                 )
             else:
                 subprocess.run(
-                    ["ffmpeg", "-y", "-i", str(ambient_path),
+                    ["ffmpeg", "-y", "-i", str(pre_ambient),
                      "-c:a", "pcm_s16le", str(pre_pause)],
                     check=True, capture_output=True,
                 )
 
-            # Build post-pause: ambient with click_down overlaid at the end
-            # (except last slide)
+            # Build post-pause: ambient (matched to next clip) with click_down
             is_last = i == len(audio_clips) - 1
+            post_ambient = ambient_paths[min(i + 1, len(ambient_paths) - 1)]
             post_pause = tmpdir / f"post_{i:02d}.wav"
             if click_down_path and not is_last:
-                # Overlay click_down near the end of the ambient pause
                 click_offset = max(0, pause - 0.075)
                 subprocess.run(
                     ["ffmpeg", "-y",
-                     "-i", str(ambient_path), "-i", str(click_down_path),
+                     "-i", str(post_ambient), "-i", str(click_down_path),
                      "-filter_complex",
                      f"[1:a]adelay={int(click_offset * 1000)}|{int(click_offset * 1000)},apad=whole_dur=0[click];"
                      "[0:a][click]amix=inputs=2:duration=first",
@@ -446,7 +438,7 @@ def assemble_video(
                 )
             else:
                 subprocess.run(
-                    ["ffmpeg", "-y", "-i", str(ambient_path),
+                    ["ffmpeg", "-y", "-i", str(post_ambient),
                      "-c:a", "pcm_s16le", str(post_pause)],
                     check=True, capture_output=True,
                 )

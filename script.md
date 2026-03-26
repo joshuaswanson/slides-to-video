@@ -4,15 +4,15 @@
 
 ## Slide 1 - Title Slide
 
-We present modal aphasia, a systematic dissociation in unified multimodal models where they can accurately generate visual content but fail to describe it in text.
+We present modal aphasia ... a systematic dissociation in unified multimodal models where they can accurately generate visual content but fail to describe it in text.
 
 ---
 
 ## Slide 2 - Unified representation spaces enable cross-modal reasoning
 
-Let's start with some context. Modern multimodal models like GPT-4o and Gemini use a unified architecture, where all modalities share the same representation space. In principle, this enables cross-modal reasoning.
+Let's start with some context. Modern multimodal models like GPT-4o and Gemini use a unified architecture, where all modalities share the same representation space. In principle, this enables cross-modal reasoning. ...
 
-For example, you can describe something and the model generates an image of it.
+For example, you can describe something, and the model generates an image of it. ...
 
 Or input an image, and the model should be able to describe what's in it.
 
@@ -20,13 +20,13 @@ Or input an image, and the model should be able to describe what's in it.
 
 ## Slide 3 - (Same slide, with paper snippets appearing)
 
-And there's good reason to believe today's frontier models work this way. Technical reports and system cards consistently describe these systems as "natively multimodal," or trained on "interleaved text and image data" within a single network. So according to the model providers themselves, these are genuinely unified architectures.
+And there's good reason to believe today's frontier models work this way. Technical reports and system cards describe these systems as "natively multimodal," or trained on "interleaved text and image data" within a single network. So according to the model providers themselves, these are genuinely unified architectures.
 
 ---
 
 ## Slide 4 - "But do those models really _understand_ what they can generate?"
 
-This raises a natural question: even though these models can draw an image of something, do they truly understand what they can draw? If the representation is really unified, knowledge should be accessible in every modality equally.
+But do those models really understand what they can draw? If the representation is really unified, knowledge should be accessible in every modality equally.
 
 ---
 
@@ -38,13 +38,13 @@ As an example, we ask ChatGPT-4o to reproduce a well-known movie poster, purely 
 
 ## Slide 6 - Harry Potter poster (with green checkmarks)
 
-And the result is remarkably accurate. The model gets almost every detail right. So since the model can generate this poster almost perfectly, it should, in theory, also be able to describe it verbally, because in a unified representation space, all modalities share the same underlying representation.
+And the result is remarkably accurate. The model gets almost every detail right.
 
 ---
 
 ## Slide 7 - Harry Potter poster (with text description appearing)
 
-So we independently ask the same model to describe that same poster in text, again purely from memory. And it produces this detailed description.
+We then independently ask the same model to describe that same poster in text, again purely from memory, and it produces this detailed description. Since the model can generate an image of this poster almost perfectly, it should, in theory, also be able to describe it verbally, because in a unified representation space, all modalities share the same underlying representation.
 
 ---
 
@@ -56,19 +56,19 @@ But when we check the description against the real poster, we find many mistakes
 
 ## Slide 9 - Modal Aphasia definition overlay
 
-We term this phenomenon Modal Aphasia: a systematic failure to express what models can perfectly draw. The name is inspired by aphasia in humans, where language production is impaired despite intact underlying cognition.
+We term this phenomenon Modal Aphasia: a systematic failure of models to express what they can perfectly draw. The name is inspired by aphasia in humans, where language production is impaired despite intact underlying cognition.
 
 ---
 
 ## Slide 10 - "Modal Aphasia exists in real-world frontier models" (blank)
 
-We study this behavior systematically on ChatGPT-5 across many movie posters.
+First we demonstrate that modal aphasia exists in real-world frontier models. Specifically, we study this behavior systematically on ChatGPT-4o across nine movie posters.
 
 ---
 
 ## Slide 11 - Error rate bar chart (Image vs Text)
 
-And the pattern is consistent. Across nine posters, verbal descriptions contain over 7 times more errors than generated images. And the majority of those errors are hallucinations, not just omissions.
+We found that verbal descriptions contain over 7 times more errors than generated images. And the majority of those errors are hallucinations, not just omissions.
 
 ---
 
@@ -76,13 +76,11 @@ And the pattern is consistent. Across nine posters, verbal descriptions contain 
 
 Looking at the hallucination breakdown more closely: verbal descriptions contain lots of fabricated details, like mentioning characters or objects that are simply not in the real poster. In contrast, generated images almost never contain such fabrications, only occasional minor inaccuracies.
 
-Now, our control over proprietary frontier models is limited, so we also perform a systematic study on open-weight models using generated faces and abstract shapes.
-
 ---
 
 ## Slide 13 - Overlay: "We perform a systematic study on open-weight models"
 
-Specifically, we fine-tune two open-weight unified models, Janus-Pro and Harmon, on synthetic datasets with known ground truth. We find that modal aphasia emerges reliably across both architectures, confirming it's a fundamental property of these models, not just an artifact of any particular training setup. For details on those experiments, see our paper.
+Now, our control over proprietary frontier models is limited, so we also perform a systematic study on open-weight models using generated faces and abstract shapes. Specifically, we fine-tune two open-weight unified models, Janus-Pro and Harmon, on synthetic datasets with known ground truth. We find that modal aphasia emerges reliably across both architectures, confirming it's a fundamental property of these models, not just an artifact of any particular training setup. For details on those experiments, see our paper.
 
 ---
 
@@ -118,10 +116,12 @@ We demonstrate this concretely with a controlled case study on Janus-Pro in the 
 
 ## Slide 19 - Takeaways
 
-To sum up: Modal Aphasia is a systematic failure in unified multimodal models, where knowledge that is accessible in one modality cannot be accessed in another. We observe this consistently across architectures and datasets, in both frontier and open-weight models.
+To sum up: Modal Aphasia is a phenomenon in which models with unified representation spaces, systematically fail to access knowledge in some modalities but not others. We observe this consistently across architectures and datasets, in both frontier and open-weight models.
 
-This has a practical impact: naive safety filters can be bypassed by exploiting cross-modal gaps in the model's knowledge.
+Second, modal aphasia can circumvent safe guards. Specifically, naive safety filters can be bypassed by exploiting cross-modal gaps in the model's knowledge.
 
-All our code, data, and full results are publicly available at the link on screen.
+Looking ahead, we think resolving modal aphasia will require models to visualize concepts in their thinking, not just as an output channel.
 
-Looking ahead, we think resolving modal aphasia will require models to visualize concepts as part of their reasoning, not just as an output channel. Thank you.
+All of our code, data, and full results are publicly available by scanning the QR code here.
+
+Thank you.
