@@ -316,7 +316,7 @@ def _generate_ambient_pause(
     """Generate ambient noise for pauses by feeding spaces to the TTS model.
 
     The model produces its characteristic background noise when given
-    whitespace input. We trim to the clean portion and loop it.
+    whitespace input. We trim to the clean portion and crossfade-loop it.
     """
     import numpy as np
     import soundfile as sf_read
@@ -328,39 +328,33 @@ def _generate_ambient_pause(
 
     # Find the clean portion (before any speech artifacts appear)
     data, sr = sf_read.read(str(raw_path), dtype="float32")
-    window_size = int(0.05 * sr)  # 50ms windows
+    window_size = int(0.05 * sr)
     trim_end = len(data)
     for start in range(0, len(data) - window_size, window_size):
         window = data[start:start + window_size]
         rms = float(np.sqrt(np.mean(window ** 2)))
-        if rms > 0.01:  # speech/artifact detected
+        if rms > 0.01:
             trim_end = start
             break
 
-    # Use at least 100ms, trim to clean portion
     trim_end = max(trim_end, int(0.1 * sr))
     clean = data[:trim_end]
 
-    # Crossfade the loop point: blend the last 10ms into the first 10ms
-    # so there's no click when looping
-    fade_samples = int(0.01 * sr)
+    # Crossfade loop point so there's no click when tiling
+    fade_samples = int(0.02 * sr)
     if len(clean) > fade_samples * 2:
-        fade_in = np.linspace(0, 1, fade_samples, dtype=np.float32)
         fade_out = np.linspace(1, 0, fade_samples, dtype=np.float32)
-        clean[:fade_samples] *= fade_in
-        clean[-fade_samples:] *= fade_out
+        fade_in = np.linspace(0, 1, fade_samples, dtype=np.float32)
+        clean[-fade_samples:] = (
+            clean[-fade_samples:] * fade_out + clean[:fade_samples] * fade_in
+        )
 
-    clean_path = output_path.parent / "ambient_clean.wav"
-    sf_read.write(str(clean_path), clean, sr)
+    # Tile to fill the requested duration
+    n_samples = int(duration * sr)
+    n_loops = int(np.ceil(n_samples / len(clean)))
+    looped = np.tile(clean, n_loops)[:n_samples]
 
-    # Loop to fill the requested duration
-    subprocess.run(
-        ["ffmpeg", "-y", "-stream_loop", "-1",
-         "-i", str(clean_path),
-         "-t", str(duration), "-c:a", "pcm_s16le",
-         str(output_path)],
-        check=True, capture_output=True,
-    )
+    sf_read.write(str(output_path), looped, sr)
 
 
 def assemble_video(
