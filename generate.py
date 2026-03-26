@@ -306,46 +306,11 @@ def generate_srt(
     print(f"  Saved subtitles to {output_path}")
 
 
-def _extract_ambient_noise(
-    audio_path: Path, output_path: Path, duration: float,
-) -> None:
-    """Extract the ambient background noise from an audio file.
-
-    Finds the quietest 100ms segments by scanning with small windows,
-    averages the top 5 to smooth out artifacts, then loops to fill duration.
-    """
-    import numpy as np
-    import soundfile as sf_read
-
-    data, sr = sf_read.read(str(audio_path), dtype="float32")
-    window_size = int(0.1 * sr)
-    if len(data) < window_size:
-        subprocess.run(
-            ["ffmpeg", "-y", "-f", "lavfi", "-t", str(duration),
-             "-i", f"anullsrc=r={sr}:cl=mono", "-c:a", "pcm_s16le",
-             str(output_path)],
-            check=True, capture_output=True,
-        )
-        return
-
-    windows = []
-    for start in range(0, len(data) - window_size, window_size // 2):
-        window = data[start:start + window_size]
-        rms = float(np.sqrt(np.mean(window ** 2)))
-        windows.append((rms, start))
-    windows.sort()
-    top_k = min(5, len(windows))
-    quiet_segment = np.mean(
-        [data[s:s + window_size] for _, s in windows[:top_k]], axis=0,
-    ).astype(np.float32)
-
-    noise_sample = output_path.parent / "noise_sample.wav"
-    sf_read.write(str(noise_sample), quiet_segment, sr)
-
+def _generate_silence(output_path: Path, duration: float, sr: int = 24000) -> None:
+    """Generate a silence WAV file."""
     subprocess.run(
-        ["ffmpeg", "-y", "-stream_loop", "-1",
-         "-i", str(noise_sample),
-         "-t", str(duration), "-c:a", "pcm_s16le",
+        ["ffmpeg", "-y", "-f", "lavfi", "-t", str(duration),
+         "-i", f"anullsrc=r={sr}:cl=mono", "-c:a", "pcm_s16le",
          str(output_path)],
         check=True, capture_output=True,
     )
@@ -380,7 +345,7 @@ def assemble_video(
 
         # Extract ambient noise from first clip for pause fill
         ambient_path = tmpdir / "ambient.wav"
-        _extract_ambient_noise(audio_clips[0], ambient_path, pause)
+        _generate_silence(ambient_path, pause)
 
         # Split click into press (down) and release (up), ~75ms boundary.
         # Down plays at end of previous slide, up plays at start of new slide.
@@ -450,11 +415,22 @@ def assemble_video(
                     check=True, capture_output=True,
                 )
 
-            # Concat: pre_pause + narration + post_pause
+            # Apply fade-in/fade-out to narration for smooth silence transitions
+            faded_clip = tmpdir / f"faded_{i:02d}.wav"
+            clip_dur = get_audio_duration(audio_clip)
+            fade_ms = 0.05
+            subprocess.run(
+                ["ffmpeg", "-y", "-i", str(audio_clip),
+                 "-af", f"afade=t=in:d={fade_ms},afade=t=out:st={clip_dur - fade_ms}:d={fade_ms}",
+                 "-c:a", "pcm_s16le", str(faded_clip)],
+                check=True, capture_output=True,
+            )
+
+            # Concat: pre_pause + faded narration + post_pause
             padded_audio = tmpdir / f"padded_{i:02d}.wav"
             subprocess.run(
                 ["ffmpeg", "-y",
-                 "-i", str(pre_pause), "-i", str(audio_clip),
+                 "-i", str(pre_pause), "-i", str(faded_clip),
                  "-i", str(post_pause),
                  "-filter_complex",
                  "[0:a][1:a][2:a]concat=n=3:v=0:a=1",
