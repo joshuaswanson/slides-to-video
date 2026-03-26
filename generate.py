@@ -121,6 +121,84 @@ def _save_cache_hashes(cache_file: Path, hashes: dict[str, str]) -> None:
     cache_file.write_text(json.dumps(hashes, indent=2))
 
 
+def _generate_slide_audio(
+    text: str,
+    engine: TTSEngine,
+    voice_wav_path: Path,
+    output_path: Path,
+    language: str,
+) -> float:
+    """Generate audio for a single slide, handling [pause N] markers.
+
+    Splits text on [pause] or [pause N] markers, generates each segment
+    separately, and concatenates them with silence gaps. Appends '...' to the
+    final segment to encourage a natural trailing pause from the TTS model.
+    Returns total duration in seconds.
+    """
+    # Split on [pause] or [pause 0.5] markers
+    parts = re.split(r"\[pause(?:\s+([\d.]+))?\]", text)
+    # parts alternates: text, pause_duration (or None), text, ...
+
+    segments = []
+    pause_durations = []
+    for i, part in enumerate(parts):
+        if i % 2 == 0:
+            stripped = part.strip()
+            if stripped:
+                segments.append(stripped)
+        else:
+            pause_durations.append(float(part) if part else 0.5)
+
+    # Simple case: no [pause] markers
+    if len(segments) <= 1:
+        final_text = (segments[0] if segments else text) + "..."
+        return engine.generate_to_file(
+            final_text, voice_wav_path, output_path, language=language,
+        )
+
+    # Generate each segment, concat with silence gaps
+    with tempfile.TemporaryDirectory() as seg_tmpdir:
+        seg_tmpdir = Path(seg_tmpdir)
+        concat_parts = []
+
+        for j, segment in enumerate(segments):
+            seg_text = segment + ("..." if j == len(segments) - 1 else "")
+            seg_path = seg_tmpdir / f"seg_{j:02d}.wav"
+            engine.generate_to_file(
+                seg_text, voice_wav_path, seg_path, language=language,
+            )
+            concat_parts.append(seg_path)
+
+            if j < len(pause_durations):
+                gap_path = seg_tmpdir / f"gap_{j:02d}.wav"
+                # Get sample rate from the segment we just generated
+                import soundfile as sf_read
+                info = sf_read.info(str(seg_path))
+                subprocess.run(
+                    ["ffmpeg", "-y", "-f", "lavfi",
+                     "-t", str(pause_durations[j]),
+                     "-i", f"anullsrc=r={info.samplerate}:cl=mono",
+                     "-c:a", "pcm_s16le", str(gap_path)],
+                    check=True, capture_output=True,
+                )
+                concat_parts.append(gap_path)
+
+        # Concatenate all parts
+        concat_file = seg_tmpdir / "concat.txt"
+        concat_file.write_text(
+            "\n".join(f"file '{p}'" for p in concat_parts)
+        )
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
+             "-i", str(concat_file), "-c", "copy", str(output_path)],
+            check=True, capture_output=True,
+        )
+
+    import soundfile as sf_read
+    info = sf_read.info(str(output_path))
+    return info.duration
+
+
 def generate_audio_clips(
     slides: list[tuple[int, str]],
     engine: TTSEngine,
@@ -149,8 +227,8 @@ def generate_audio_clips(
         else:
             print(f"  Slide {slide_num}: generating...")
 
-        duration = engine.generate_to_file(
-            text, voice_wav_path, out_path, language=language,
+        duration = _generate_slide_audio(
+            text, engine, voice_wav_path, out_path, language,
         )
         hashes[key] = current_hash
         _save_cache_hashes(cache_file, hashes)
@@ -158,53 +236,6 @@ def generate_audio_clips(
         clip_paths.append(out_path)
     return clip_paths
 
-
-def _extract_ambient_noise(
-    audio_path: Path, output_path: Path, duration: float,
-) -> None:
-    """Extract the ambient background noise from an audio file.
-
-    Finds the quietest segment in the audio by scanning with small windows,
-    then loops that segment to fill the requested duration.
-    """
-    import numpy as np
-    import soundfile as sf_read
-
-    data, sr = sf_read.read(str(audio_path), dtype="float32")
-    window_size = int(0.1 * sr)  # 100ms windows
-    if len(data) < window_size:
-        # Fallback: generate actual silence if audio is too short
-        subprocess.run(
-            ["ffmpeg", "-y", "-f", "lavfi", "-t", str(duration),
-             "-i", f"anullsrc=r={sr}:cl=mono", "-c:a", "pcm_s16le",
-             str(output_path)],
-            check=True, capture_output=True,
-        )
-        return
-
-    # Find the quietest 100ms window
-    min_rms = float("inf")
-    best_start = 0
-    for start in range(0, len(data) - window_size, window_size // 2):
-        window = data[start:start + window_size]
-        rms = float(np.sqrt(np.mean(window ** 2)))
-        if rms < min_rms:
-            min_rms = rms
-            best_start = start
-
-    # Extract the quiet segment and write it
-    quiet_segment = data[best_start:best_start + window_size]
-    noise_sample = output_path.parent / "noise_sample.wav"
-    sf_read.write(str(noise_sample), quiet_segment, sr)
-
-    # Loop it to fill the pause duration
-    subprocess.run(
-        ["ffmpeg", "-y", "-stream_loop", "-1",
-         "-i", str(noise_sample),
-         "-t", str(duration), "-c:a", "pcm_s16le",
-         str(output_path)],
-        check=True, capture_output=True,
-    )
 
 
 def apply_speed(audio_path: Path, speed: float, output_path: Path) -> None:
@@ -253,7 +284,6 @@ def format_srt_time(seconds: float) -> str:
 def generate_srt(
     slides: list[tuple[int, str]],
     audio_clips: list[Path],
-    pause: float,
     output_path: Path,
 ) -> None:
     """Generate an SRT subtitle file from slides and their audio durations."""
@@ -261,7 +291,7 @@ def generate_srt(
     current_time = 0.0
 
     for i, ((_, text), audio_clip) in enumerate(zip(slides, audio_clips)):
-        start_time = current_time + pause
+        start_time = current_time
         duration = get_audio_duration(audio_clip)
         end_time = start_time + duration
 
@@ -281,7 +311,6 @@ def assemble_video(
     audio_clips: list[Path],
     slides: list[tuple[int, str]],
     output_path: Path,
-    pause: float,
     speed: float | None = None,
 ) -> None:
     """Stitch slide images and audio clips into a video with pauses between slides."""
@@ -298,34 +327,19 @@ def assemble_video(
                 sped_clips.append(sped)
             audio_clips = sped_clips
 
-        # Match the ambient background noise from the audio clips so pauses
-        # don't have jarring dead silence. We use silencedetect to find a
-        # quiet moment in the audio, then extract and loop that segment.
-        silence_path = tmpdir / "silence.wav"
-        _extract_ambient_noise(audio_clips[0], silence_path, pause)
-
         segment_paths = []
         total_duration = 0.0
 
         for i, (audio_clip, (slide_num, _)) in enumerate(zip(audio_clips, slides)):
             slide_img = slide_images[slide_num - 1]
             duration = get_audio_duration(audio_clip)
-            segment_duration = duration + pause
-
-            # Prepend silence so narration starts after the pause
-            padded_audio = tmpdir / f"padded_{i:02d}.wav"
-            subprocess.run(
-                ["ffmpeg", "-y", "-i", str(silence_path), "-i", str(audio_clip),
-                 "-filter_complex", "[0:a][1:a]concat=n=2:v=0:a=1",
-                 "-c:a", "pcm_s16le", str(padded_audio)],
-                check=True, capture_output=True,
-            )
+            segment_duration = duration
 
             segment_path = tmpdir / f"segment_{i:02d}.mp4"
             subprocess.run(
                 ["ffmpeg", "-y",
                  "-loop", "1", "-i", str(slide_img),
-                 "-i", str(padded_audio),
+                 "-i", str(audio_clip),
                  "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                  "-c:v", "libx264", "-tune", "stillimage",
                  "-c:a", "aac", "-b:a", "192k",
@@ -337,7 +351,7 @@ def assemble_video(
             )
             segment_paths.append(segment_path)
             total_duration += segment_duration
-            print(f"  Slide {slide_num}: {duration:.1f}s + {pause}s pause")
+            print(f"  Slide {slide_num}: {duration:.1f}s")
 
         # Concatenate all segments
         concat_file = tmpdir / "concat.txt"
@@ -372,10 +386,6 @@ def main():
     parser.add_argument(
         "--output", type=Path, default=Path("output.mp4"),
         help="Output video path",
-    )
-    parser.add_argument(
-        "--pause", type=float, default=1.0,
-        help="Seconds of silence before narration on each slide",
     )
     parser.add_argument(
         "--device", type=str, default="cuda",
@@ -478,12 +488,12 @@ def main():
 
     if args.srt:
         print("Generating subtitles...")
-        generate_srt(slides, audio_clips, args.pause, args.srt)
+        generate_srt(slides, audio_clips, args.srt)
         print()
 
     print("Assembling video...")
     assemble_video(
-        slide_images, audio_clips, slides, args.output, args.pause,
+        slide_images, audio_clips, slides, args.output,
         speed=args.speed,
     )
     print(f"\nDone! Saved to {args.output}")
