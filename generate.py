@@ -306,35 +306,52 @@ def generate_srt(
     print(f"  Saved subtitles to {output_path}")
 
 
-def _generate_ambient_noise(
-    audio_path: Path, output_path: Path, duration: float,
+def _generate_ambient_pause(
+    engine: TTSEngine,
+    voice_wav_path: Path,
+    output_path: Path,
+    duration: float,
+    language: str = "en",
 ) -> None:
-    """Generate ambient noise matching a clip's noise floor.
+    """Generate ambient noise for pauses by feeding spaces to the TTS model.
 
-    Measures the noise floor RMS from the quietest parts of the audio,
-    then generates white noise at that level.
+    The model produces its characteristic background noise when given
+    whitespace input. We trim to the clean portion and loop it.
     """
     import numpy as np
     import soundfile as sf_read
 
-    data, sr = sf_read.read(str(audio_path), dtype="float32")
-    window_size = int(0.1 * sr)
+    raw_path = output_path.parent / "ambient_raw.wav"
+    engine.generate_to_file(
+        "                    ", voice_wav_path, raw_path, language=language,
+    )
 
-    rms_values = []
-    for start in range(0, len(data) - window_size, window_size // 2):
+    # Find the clean portion (before any speech artifacts appear)
+    data, sr = sf_read.read(str(raw_path), dtype="float32")
+    window_size = int(0.05 * sr)  # 50ms windows
+    trim_end = len(data)
+    for start in range(0, len(data) - window_size, window_size):
         window = data[start:start + window_size]
-        rms_values.append(float(np.sqrt(np.mean(window ** 2))))
+        rms = float(np.sqrt(np.mean(window ** 2)))
+        if rms > 0.01:  # speech/artifact detected
+            trim_end = start
+            break
 
-    # Bottom 5% represents the actual noise floor (gaps between words)
-    rms_values.sort()
-    bottom = rms_values[:max(1, len(rms_values) // 20)]
-    target_rms = float(np.median(bottom))
+    # Use at least 100ms, trim to clean portion
+    trim_end = max(trim_end, int(0.1 * sr))
+    clean = data[:trim_end]
 
-    n_samples = int(duration * sr)
-    noise = np.random.randn(n_samples).astype(np.float32)
-    noise = noise * target_rms
+    clean_path = output_path.parent / "ambient_clean.wav"
+    sf_read.write(str(clean_path), clean, sr)
 
-    sf_read.write(str(output_path), noise, sr)
+    # Loop to fill the requested duration
+    subprocess.run(
+        ["ffmpeg", "-y", "-stream_loop", "-1",
+         "-i", str(clean_path),
+         "-t", str(duration), "-c:a", "pcm_s16le",
+         str(output_path)],
+        check=True, capture_output=True,
+    )
 
 
 def assemble_video(
@@ -342,6 +359,9 @@ def assemble_video(
     audio_clips: list[Path],
     slides: list[tuple[int, str]],
     output_path: Path,
+    engine: TTSEngine,
+    voice_wav_path: Path,
+    language: str = "en",
     pause: float = 1.0,
     speed: float | None = None,
     click_sound: Path | None = None,
@@ -364,12 +384,11 @@ def assemble_video(
                 sped_clips.append(sped)
             audio_clips = sped_clips
 
-        # Generate per-clip ambient noise for pauses
-        ambient_paths = []
-        for idx, clip in enumerate(audio_clips):
-            ap = tmpdir / f"ambient_{idx:02d}.wav"
-            _generate_ambient_noise(clip, ap, pause)
-            ambient_paths.append(ap)
+        # Generate ambient noise for pauses using the TTS model itself
+        ambient_path = tmpdir / "ambient.wav"
+        _generate_ambient_pause(
+            engine, voice_wav_path, ambient_path, pause, language=language,
+        )
 
         # Split click into press (down) and release (up), ~75ms boundary.
         # Down plays at end of previous slide, up plays at start of new slide.
@@ -398,7 +417,7 @@ def assemble_video(
             slide_img = slide_images[slide_num - 1]
 
             # Build pre-pause: ambient (matched to this clip) with click_up overlaid
-            pre_ambient = ambient_paths[i]
+            pre_ambient = ambient_path
             pre_pause = tmpdir / f"pre_{i:02d}.wav"
             if click_up_path and i > 0:
                 subprocess.run(
@@ -419,7 +438,7 @@ def assemble_video(
 
             # Build post-pause: ambient (matched to next clip) with click_down
             is_last = i == len(audio_clips) - 1
-            post_ambient = ambient_paths[min(i + 1, len(ambient_paths) - 1)]
+            post_ambient = ambient_path
             post_pause = tmpdir / f"post_{i:02d}.wav"
             if click_down_path and not is_last:
                 click_offset = max(0, pause - 0.075)
@@ -621,7 +640,9 @@ def main():
     print("Assembling video...")
     assemble_video(
         slide_images, audio_clips, slides, args.output,
-        pause=args.pause, speed=args.speed, click_sound=args.click_sound,
+        engine=engine, voice_wav_path=voice_wav,
+        language=args.language, pause=args.pause,
+        speed=args.speed, click_sound=args.click_sound,
     )
     print(f"\nDone! Saved to {args.output}")
 
