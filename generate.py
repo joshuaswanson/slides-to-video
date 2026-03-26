@@ -311,26 +311,36 @@ def _extract_ambient_noise(
 ) -> None:
     """Extract the ambient background noise from an audio file.
 
-    Uses a noise gate to strip speech, keeping only the background hiss/hum.
-    Then takes a 0.5s sample from the gated audio and loops it.
+    Finds the quietest 100ms segments by scanning with small windows,
+    averages the top 5 to smooth out artifacts, then loops to fill duration.
     """
-    noise_gated = output_path.parent / "noise_gated.wav"
-    subprocess.run(
-        ["ffmpeg", "-y", "-i", str(audio_path),
-         "-af", "agate=threshold=0.01:ratio=20:attack=5:release=50",
-         "-c:a", "pcm_s16le", str(noise_gated)],
-        check=True, capture_output=True,
-    )
+    import numpy as np
+    import soundfile as sf_read
 
-    gated_dur = get_audio_duration(noise_gated)
-    mid = max(0, gated_dur / 2 - 0.25)
+    data, sr = sf_read.read(str(audio_path), dtype="float32")
+    window_size = int(0.1 * sr)
+    if len(data) < window_size:
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "lavfi", "-t", str(duration),
+             "-i", f"anullsrc=r={sr}:cl=mono", "-c:a", "pcm_s16le",
+             str(output_path)],
+            check=True, capture_output=True,
+        )
+        return
+
+    windows = []
+    for start in range(0, len(data) - window_size, window_size // 2):
+        window = data[start:start + window_size]
+        rms = float(np.sqrt(np.mean(window ** 2)))
+        windows.append((rms, start))
+    windows.sort()
+    top_k = min(5, len(windows))
+    quiet_segment = np.mean(
+        [data[s:s + window_size] for _, s in windows[:top_k]], axis=0,
+    ).astype(np.float32)
+
     noise_sample = output_path.parent / "noise_sample.wav"
-    subprocess.run(
-        ["ffmpeg", "-y", "-i", str(noise_gated),
-         "-ss", str(mid), "-t", "0.5",
-         "-c:a", "pcm_s16le", str(noise_sample)],
-        check=True, capture_output=True,
-    )
+    sf_read.write(str(noise_sample), quiet_segment, sr)
 
     subprocess.run(
         ["ffmpeg", "-y", "-stream_loop", "-1",
