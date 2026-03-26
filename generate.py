@@ -312,6 +312,7 @@ def assemble_video(
     slides: list[tuple[int, str]],
     output_path: Path,
     speed: float | None = None,
+    click_sound: Path | None = None,
 ) -> None:
     """Stitch slide images and audio clips into a video with pauses between slides."""
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -332,6 +333,20 @@ def assemble_video(
 
         for i, (audio_clip, (slide_num, _)) in enumerate(zip(audio_clips, slides)):
             slide_img = slide_images[slide_num - 1]
+
+            # Mix click sound into the beginning of the audio if provided
+            if click_sound and i > 0:
+                mixed_audio = tmpdir / f"clicked_{i:02d}.wav"
+                subprocess.run(
+                    ["ffmpeg", "-y",
+                     "-i", str(audio_clip), "-i", str(click_sound),
+                     "-filter_complex",
+                     "[1:a]apad=whole_dur=0[click];[0:a][click]amix=inputs=2:duration=first",
+                     "-c:a", "pcm_s16le", str(mixed_audio)],
+                    check=True, capture_output=True,
+                )
+                audio_clip = mixed_audio
+
             duration = get_audio_duration(audio_clip)
             segment_duration = duration
 
@@ -416,6 +431,10 @@ def main():
         help="Export SRT subtitles to the given path",
     )
     parser.add_argument(
+        "--click-sound", type=Path, default=None, metavar="PATH",
+        help="Path to a click sound effect to play at each slide transition",
+    )
+    parser.add_argument(
         "--cache-dir", type=Path, default=Path(".cache"),
         help="Directory for intermediate files",
     )
@@ -494,7 +513,7 @@ def main():
     print("Assembling video...")
     assemble_video(
         slide_images, audio_clips, slides, args.output,
-        speed=args.speed,
+        speed=args.speed, click_sound=args.click_sound,
     )
     print(f"\nDone! Saved to {args.output}")
 
