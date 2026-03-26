@@ -101,6 +101,7 @@ class Qwen3TTSEngine(TTSEngine):
             text=text,
             language=lang_name,
             ref_audio=str(voice_wav_path),
+            x_vector_only_mode=True,
         )
         return wavs[0], sr
 
