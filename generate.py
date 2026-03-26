@@ -19,6 +19,8 @@ The script should be a markdown file with slide sections separated by '---':
 """
 
 import argparse
+import hashlib
+import json
 import re
 import subprocess
 import tempfile
@@ -100,6 +102,23 @@ def merge_voice_samples(voice_paths: list[Path], output_path: Path) -> Path:
     return output_path
 
 
+def _text_hash(text: str) -> str:
+    """Return a short hash of the slide text for cache invalidation."""
+    return hashlib.sha256(text.encode()).hexdigest()[:16]
+
+
+def _load_cache_hashes(cache_file: Path) -> dict[str, str]:
+    """Load slide text hashes from the cache manifest."""
+    if cache_file.exists():
+        return json.loads(cache_file.read_text())
+    return {}
+
+
+def _save_cache_hashes(cache_file: Path, hashes: dict[str, str]) -> None:
+    """Save slide text hashes to the cache manifest."""
+    cache_file.write_text(json.dumps(hashes, indent=2))
+
+
 def generate_audio_clips(
     slides: list[tuple[int, str]],
     engine: TTSEngine,
@@ -109,17 +128,30 @@ def generate_audio_clips(
 ) -> list[Path]:
     """Generate TTS audio for each slide using the cloned voice."""
     output_dir.mkdir(exist_ok=True)
+    cache_file = output_dir / "hashes.json"
+    hashes = _load_cache_hashes(cache_file)
     clip_paths = []
     for slide_num, text in slides:
         out_path = output_dir / f"slide_{slide_num:02d}.wav"
-        if out_path.exists():
+        key = f"slide_{slide_num:02d}"
+        current_hash = _text_hash(text)
+
+        if out_path.exists() and hashes.get(key) == current_hash:
             print(f"  Slide {slide_num}: using cached audio")
             clip_paths.append(out_path)
             continue
-        print(f"  Slide {slide_num}: generating...")
+
+        if out_path.exists():
+            print(f"  Slide {slide_num}: script changed, regenerating...")
+            out_path.unlink()
+        else:
+            print(f"  Slide {slide_num}: generating...")
+
         duration = engine.generate_to_file(
             text, voice_wav_path, out_path, language=language,
         )
+        hashes[key] = current_hash
+        _save_cache_hashes(cache_file, hashes)
         print(f"  Slide {slide_num}: {duration:.1f}s")
         clip_paths.append(out_path)
     return clip_paths
