@@ -306,39 +306,52 @@ def generate_srt(
     print(f"  Saved subtitles to {output_path}")
 
 
-def _generate_matching_noise(
+def _extract_ambient_noise(
     audio_path: Path, output_path: Path, duration: float,
 ) -> None:
-    """Generate pink noise matching a specific audio clip's noise floor.
+    """Extract the actual ambient noise from an audio clip using spectral gating.
 
-    Measures the noise floor from the 25th percentile RMS of the clip,
-    then generates pink noise at that level.
+    Uses ffmpeg's afftdn filter to isolate the noise component, then takes
+    a sample from the result and loops it.
     """
-    import numpy as np
-    import soundfile as sf_read
-    from scipy.signal import lfilter
+    denoised = output_path.parent / f"denoised_{output_path.stem}.wav"
+    noise_only = output_path.parent / f"noiseonly_{output_path.stem}.wav"
 
-    data, sr = sf_read.read(str(audio_path), dtype="float32")
-    window_size = int(0.1 * sr)
+    # First pass: denoise the audio
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", str(audio_path),
+         "-af", "afftdn=nr=30:nt=w",
+         "-c:a", "pcm_s16le", str(denoised)],
+        check=True, capture_output=True,
+    )
+    # Subtract denoised from original to get just the noise
+    subprocess.run(
+        ["ffmpeg", "-y",
+         "-i", str(audio_path), "-i", str(denoised),
+         "-filter_complex",
+         "[0:a][1:a]amix=inputs=2:weights=1 -1:duration=first",
+         "-c:a", "pcm_s16le", str(noise_only)],
+        check=True, capture_output=True,
+    )
 
-    rms_values = []
-    for start in range(0, len(data) - window_size, window_size // 2):
-        window = data[start:start + window_size]
-        rms_values.append(float(np.sqrt(np.mean(window ** 2))))
+    # Take a 0.5s sample from the middle and loop it
+    noise_dur = get_audio_duration(noise_only)
+    mid = max(0, noise_dur / 2 - 0.25)
+    noise_sample = output_path.parent / f"noisesample_{output_path.stem}.wav"
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", str(noise_only),
+         "-ss", str(mid), "-t", "0.5",
+         "-c:a", "pcm_s16le", str(noise_sample)],
+        check=True, capture_output=True,
+    )
 
-    target_rms = float(np.percentile(rms_values, 5)) if rms_values else 0.004
-
-    # Generate pink noise (1/f spectrum)
-    n_samples = int(duration * sr)
-    white = np.random.randn(n_samples).astype(np.float32)
-    b = np.array([0.049922035, -0.095993537, 0.050612699, -0.004709510])
-    a = np.array([1.0, -2.494956002, 2.017265875, -0.522189400])
-    pink = lfilter(b, a, white).astype(np.float32)
-    current_rms = float(np.sqrt(np.mean(pink ** 2)))
-    if current_rms > 0:
-        pink = pink * (target_rms / current_rms)
-
-    sf_read.write(str(output_path), pink, sr)
+    subprocess.run(
+        ["ffmpeg", "-y", "-stream_loop", "-1",
+         "-i", str(noise_sample),
+         "-t", str(duration), "-c:a", "pcm_s16le",
+         str(output_path)],
+        check=True, capture_output=True,
+    )
 
 
 def assemble_video(
@@ -372,7 +385,7 @@ def assemble_video(
         ambient_paths = []
         for idx, clip in enumerate(audio_clips):
             ap = tmpdir / f"ambient_{idx:02d}.wav"
-            _generate_matching_noise(clip, ap, pause)
+            _extract_ambient_noise(clip, ap, pause)
             ambient_paths.append(ap)
 
         # Split click into press (down) and release (up), ~75ms boundary.
