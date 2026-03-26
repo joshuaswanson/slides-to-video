@@ -10,7 +10,11 @@ We present modal aphasia, a systematic dissociation in unified multimodal models
 
 ## Slide 2 - Unified representation spaces enable cross-modal reasoning
 
-So let's start with some context. Modern multimodal models like GPT-4o and Gemini use a unified architecture, where all modalities share the same representation space. In principle, this allows powerful cross-modal transfer: you can describe something and the model generates an image of it, or it hears something and produces a caption.
+Let's start with some context. Modern multimodal models like GPT-4o and Gemini use a unified architecture, where all modalities share the same representation space. In principle, this enables cross-modal reasoning.
+
+For example, you can describe something and the model generates an image of it.
+
+Or input an image, and the model should be able to describe what's in it.
 
 ---
 
@@ -22,19 +26,19 @@ And there's good reason to believe today's frontier models work this way. Techni
 
 ## Slide 4 - "But do those models really _understand_ what they can generate?"
 
-This raises a natural question: if these models can generate something, do they truly understand it? If the representation is really unified, knowledge should be accessible in every modality equally.
+This raises a natural question: even though these models can draw an image of something, do they truly understand what they can draw? If the representation is really unified, knowledge should be accessible in every modality equally.
 
 ---
 
 ## Slide 5 - Harry Potter poster (image only)
 
-As an example, we ask ChatGPT-5 to reproduce a well-known movie poster, purely from memory.
+As an example, we ask ChatGPT-4o to reproduce a well-known movie poster, purely from memory.
 
 ---
 
 ## Slide 6 - Harry Potter poster (with green checkmarks)
 
-And the result is remarkably accurate. The model gets almost every detail right. So since the model can generate this poster almost perfectly, it should also be able to describe it verbally, right? After all, in a unified representation space, all modalities share the same underlying representation.
+And the result is remarkably accurate. The model gets almost every detail right. So since the model can generate this poster almost perfectly, it should, in theory, also be able to describe it verbally, because in a unified representation space, all modalities share the same underlying representation.
 
 ---
 
@@ -46,13 +50,13 @@ So we independently ask the same model to describe that same poster in text, aga
 
 ## Slide 8 - Harry Potter poster (description with red/green highlights)
 
-But when we check the description against the real poster, we find many mistakes. Green here marks correct details, and red marks fabricated or hallucinated ones. The model fabricates characters and objects that aren't on the poster, and misidentifies key details. The text description contains over 7 times more errors than the generated image.
+But when we check the description against the real poster, we find many mistakes. The model fabricates characters and objects that aren't on the poster, and misidentifies key details.
 
 ---
 
 ## Slide 9 - Modal Aphasia definition overlay
 
-We term this systematic failure Modal Aphasia: the model can perfectly visualize a concept, but fails to express it verbally. The name is inspired by aphasia in humans, where language production is impaired despite intact underlying cognition.
+We term this phenomenon Modal Aphasia: a systematic failure to express what models can perfectly draw. The name is inspired by aphasia in humans, where language production is impaired despite intact underlying cognition.
 
 ---
 

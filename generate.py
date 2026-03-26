@@ -18,6 +18,8 @@ The script should be a markdown file with slide sections separated by '---':
     Text to narrate for slide 2.
 """
 
+from __future__ import annotations
+
 import argparse
 import hashlib
 import json
@@ -48,7 +50,7 @@ def parse_script(script_path: Path) -> list[tuple[int, str]]:
     return slides
 
 
-def parse_slide_range(spec: str, max_slide: int) -> set[int]:
+def parse_slide_range(spec: str) -> set[int]:
     """Parse a slide range specification like '1,3,5-7' into a set of ints."""
     result = set()
     for part in spec.split(","):
@@ -157,6 +159,54 @@ def generate_audio_clips(
     return clip_paths
 
 
+def _extract_ambient_noise(
+    audio_path: Path, output_path: Path, duration: float,
+) -> None:
+    """Extract the ambient background noise from an audio file.
+
+    Finds the quietest segment in the audio by scanning with small windows,
+    then loops that segment to fill the requested duration.
+    """
+    import numpy as np
+    import soundfile as sf_read
+
+    data, sr = sf_read.read(str(audio_path), dtype="float32")
+    window_size = int(0.1 * sr)  # 100ms windows
+    if len(data) < window_size:
+        # Fallback: generate actual silence if audio is too short
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "lavfi", "-t", str(duration),
+             "-i", f"anullsrc=r={sr}:cl=mono", "-c:a", "pcm_s16le",
+             str(output_path)],
+            check=True, capture_output=True,
+        )
+        return
+
+    # Find the quietest 100ms window
+    min_rms = float("inf")
+    best_start = 0
+    for start in range(0, len(data) - window_size, window_size // 2):
+        window = data[start:start + window_size]
+        rms = float(np.sqrt(np.mean(window ** 2)))
+        if rms < min_rms:
+            min_rms = rms
+            best_start = start
+
+    # Extract the quiet segment and write it
+    quiet_segment = data[best_start:best_start + window_size]
+    noise_sample = output_path.parent / "noise_sample.wav"
+    sf_read.write(str(noise_sample), quiet_segment, sr)
+
+    # Loop it to fill the pause duration
+    subprocess.run(
+        ["ffmpeg", "-y", "-stream_loop", "-1",
+         "-i", str(noise_sample),
+         "-t", str(duration), "-c:a", "pcm_s16le",
+         str(output_path)],
+        check=True, capture_output=True,
+    )
+
+
 def apply_speed(audio_path: Path, speed: float, output_path: Path) -> None:
     """Adjust playback speed of an audio file using ffmpeg atempo filter."""
     subprocess.run(
@@ -210,7 +260,7 @@ def generate_srt(
     entries = []
     current_time = 0.0
 
-    for i, ((slide_num, text), audio_clip) in enumerate(zip(slides, audio_clips)):
+    for i, ((_, text), audio_clip) in enumerate(zip(slides, audio_clips)):
         start_time = current_time + pause
         duration = get_audio_duration(audio_clip)
         end_time = start_time + duration
@@ -248,25 +298,11 @@ def assemble_video(
                 sped_clips.append(sped)
             audio_clips = sped_clips
 
-        # Extract the background noise/hum from the first audio clip using
-        # ffmpeg's noise filter in "output noise" mode, then loop it for
-        # pauses so transitions don't have jarring dead silence.
-        noise_sample_path = tmpdir / "noise_sample.wav"
+        # Match the ambient background noise from the audio clips so pauses
+        # don't have jarring dead silence. We use silencedetect to find a
+        # quiet moment in the audio, then extract and loop that segment.
         silence_path = tmpdir / "silence.wav"
-        subprocess.run(
-            ["ffmpeg", "-y", "-i", str(audio_clips[0]),
-             "-af", "afftdn=noise_type=white:output_mode=noise",
-             "-c:a", "pcm_s16le", str(noise_sample_path)],
-            check=True, capture_output=True,
-        )
-        # Loop the extracted noise to fill the pause duration
-        subprocess.run(
-            ["ffmpeg", "-y", "-stream_loop", "-1",
-             "-i", str(noise_sample_path),
-             "-t", str(pause), "-c:a", "pcm_s16le",
-             str(silence_path)],
-            check=True, capture_output=True,
-        )
+        _extract_ambient_noise(audio_clips[0], silence_path, pause)
 
         segment_paths = []
         total_duration = 0.0
@@ -403,8 +439,7 @@ def main():
 
     # Filter to requested slides
     if args.only_slides:
-        max_slide = max(n for n, _ in slides)
-        requested = parse_slide_range(args.only_slides, max_slide)
+        requested = parse_slide_range(args.only_slides)
         slides = [(n, t) for n, t in slides if n in requested]
         print(f"  Filtered to {len(slides)} slides: {sorted(n for n, _ in slides)}\n")
 
