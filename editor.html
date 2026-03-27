@@ -964,6 +964,41 @@
             </svg>
             Generate All Audio
           </button>
+          <button
+            class="btn"
+            id="btnPlayAll"
+            onclick="togglePlayAll()"
+            style="gap: 6px"
+          >
+            <svg
+              id="playAllIcon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            <svg
+              id="stopAllIcon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="display: none"
+            >
+              <rect x="6" y="6" width="12" height="12" />
+            </svg>
+            <span id="playAllLabel">Play All</span>
+          </button>
         </div>
         <div class="topbar-right">
           <button class="btn btn-primary" id="btnExport" onclick="buildVideo()">
@@ -1234,6 +1269,8 @@
       let animFrameId = null;
       let saveTimeout = null;
       let videoReady = false;
+      let isPlayingAll = false;
+      let playAllAbort = false;
 
       const API_BASE = window.location.origin;
 
@@ -1547,6 +1584,64 @@
         if (fraction < 1) {
           animFrameId = requestAnimationFrame(updatePlayhead);
         }
+      }
+
+      async function togglePlayAll() {
+        if (isPlayingAll) {
+          playAllAbort = true;
+          stopPlayback();
+          isPlayingAll = false;
+          document.getElementById("playAllIcon").style.display = "";
+          document.getElementById("stopAllIcon").style.display = "none";
+          document.getElementById("playAllLabel").textContent = "Play All";
+          return;
+        }
+
+        isPlayingAll = true;
+        playAllAbort = false;
+        document.getElementById("playAllIcon").style.display = "none";
+        document.getElementById("stopAllIcon").style.display = "";
+        document.getElementById("playAllLabel").textContent = "Stop";
+
+        const pauseDuration = 1.0;
+
+        for (let i = 0; i < slides.length; i++) {
+          if (playAllAbort) break;
+
+          selectSlide(i);
+          const slide = slides[i];
+          if (!slide.has_audio) continue;
+
+          await loadAudio(slide.slide_num);
+          if (playAllAbort) break;
+
+          // Play the slide audio
+          playOffset = 0;
+          startPlayback();
+
+          // Wait for it to finish
+          await new Promise((resolve) => {
+            const check = () => {
+              if (playAllAbort || !isPlaying) {
+                resolve();
+              } else {
+                requestAnimationFrame(check);
+              }
+            };
+            check();
+          });
+
+          if (playAllAbort) break;
+
+          // Pause between slides
+          await new Promise((r) => setTimeout(r, pauseDuration * 1000));
+        }
+
+        isPlayingAll = false;
+        playAllAbort = false;
+        document.getElementById("playAllIcon").style.display = "";
+        document.getElementById("stopAllIcon").style.display = "none";
+        document.getElementById("playAllLabel").textContent = "Play All";
       }
 
       function seekAudio(event) {
