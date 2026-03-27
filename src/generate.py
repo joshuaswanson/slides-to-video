@@ -409,13 +409,13 @@ def assemble_video(
             click_up_path = tmpdir / "click_up.wav"
             subprocess.run(
                 ["ffmpeg", "-y", "-i", str(click_sound),
-                 "-t", "0.075", "-ar", "24000", "-ac", "1",
+                 "-t", "0.085", "-ar", "24000", "-ac", "1",
                  "-c:a", "pcm_s16le", str(click_down_path)],
                 check=True, capture_output=True,
             )
             subprocess.run(
                 ["ffmpeg", "-y", "-i", str(click_sound),
-                 "-ss", "0.075", "-ar", "24000", "-ac", "1",
+                 "-ss", "0.085", "-ar", "24000", "-ac", "1",
                  "-c:a", "pcm_s16le", str(click_up_path)],
                 check=True, capture_output=True,
             )
@@ -451,7 +451,7 @@ def assemble_video(
             post_ambient = ambient_path
             post_pause = tmpdir / f"post_{i:02d}.wav"
             if click_down_path and not is_last:
-                click_offset = max(0, pause - 0.075)
+                click_offset = max(0, pause - 0.085)
                 subprocess.run(
                     ["ffmpeg", "-y",
                      "-i", str(post_ambient), "-i", str(click_down_path),
