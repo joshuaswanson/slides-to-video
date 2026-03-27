@@ -118,17 +118,17 @@ async def api_audio(slide_num: int):
 
 
 @app.post("/api/update-script/{slide_num}")
-async def api_update_script(slide_num: int, text: str = Form(...)):
+async def api_update_script(slide_num: int, request: dict):
+    text = request.get("text", "")
     if not SCRIPT_PATH.exists():
         return JSONResponse({"error": "No script file"}, status_code=404)
 
     content = SCRIPT_PATH.read_text()
-    slides = _parse_current_script()
 
     # Rebuild the script with the updated text for this slide
+    import re
     blocks = content.split("---")
     for i, block in enumerate(blocks):
-        import re
         match = re.search(r"##\s+Slide\s+(\d+)", block)
         if match and int(match.group(1)) == slide_num:
             # Keep the heading, replace the body
