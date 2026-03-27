@@ -4,17 +4,17 @@
 
 ## Slide 1 - Title Slide
 
-We present modal aphasia ... a systematic dissociation in unified multimodal models where they can accurately generate visual content but fail to describe it in text.
+We present modal aphasia.
 
 ---
 
 ## Slide 2 - Unified representation spaces enable cross-modal reasoning
 
-Let's start with some context. Modern multimodal models like GPT-4o and Gemini use a unified architecture, where all modalities share the same representation space. In principle, this enables cross-modal reasoning. ...
+Modern multimodal models like GPT-4o and Gemini have a unified architecture, where all modalities share the same representation space. These unified representation spaces enable cross-modal reasoning. ...
 
 For example, you can describe something, and the model generates an image of it. ...
 
-Or input an image, and the model should be able to describe what's in it.
+Or you can input audio, and the model can transcribe it.
 
 ---
 
@@ -26,7 +26,7 @@ And there's good reason to believe today's frontier models work this way. Techni
 
 ## Slide 4 - "But do those models really _understand_ what they can generate?"
 
-But do those models really understand what they can draw? If the representation is really unified, knowledge should be accessible in every modality equally.
+But do those models really understand what they can draw? If their representations are really unified, knowledge should be accessible in every modality equally.
 
 ---
 
@@ -38,13 +38,13 @@ As an example, we ask ChatGPT-4o to reproduce a well-known movie poster, purely 
 
 ## Slide 6 - Harry Potter poster (with green checkmarks)
 
-And the result is remarkably accurate. The model gets almost every detail right.
+And the result is remarkably accurate. ChatGPT-4o gets almost every detail right.
 
 ---
 
 ## Slide 7 - Harry Potter poster (with text description appearing)
 
-We then independently ask the same model to describe that same poster in text, again purely from memory, and it produces this detailed description. Since the model can generate an image of this poster almost perfectly, it should, in theory, also be able to describe it verbally, because in a unified representation space, all modalities share the same underlying representation.
+We then independently ask ChatGPT-4o to describe that same poster in text, again purely from memory, and it produces this detailed description.
 
 ---
 
@@ -56,7 +56,7 @@ But when we check the description against the real poster, we find many mistakes
 
 ## Slide 9 - Modal Aphasia definition overlay
 
-We term this phenomenon Modal Aphasia: a systematic failure of models to express what they can perfectly draw. The name is inspired by aphasia in humans, where language production is impaired despite intact underlying cognition.
+We term this phenomenon Modal Aphasia: a systematic failure of models to express verbally what they can perfectly draw. The name is inspired by aphasia in humans, where language production is impaired despite intact underlying cognition.
 
 ---
 
@@ -80,7 +80,7 @@ Looking at the hallucination breakdown more closely: verbal descriptions contain
 
 ## Slide 13 - Overlay: "We perform a systematic study on open-weight models"
 
-Now, our control over proprietary frontier models is limited, so we also perform a systematic study on open-weight models using generated faces and abstract shapes. Specifically, we fine-tune two open-weight unified models, Janus-Pro and Harmon, on synthetic datasets with known ground truth. We find that modal aphasia emerges reliably across both architectures, confirming it's a fundamental property of these models, not just an artifact of any particular training setup. For details on those experiments, see our paper.
+Our control over proprietary frontier models is limited, so we also perform a systematic study on open-weight models using generated faces and abstract shapes. We find that modal aphasia emerges reliably across both architectures, confirming it's a **fundamental** property of these models, not just an artifact of any particular training setup. For details on those experiments, see our paper.
 
 ---
 
@@ -92,7 +92,7 @@ Modal aphasia also has implications for AI safety. Safety filters are typically 
 
 ## Slide 15 - Safety training + Training data
 
-Now, the model's training data contains a mix of benign images and sensitive content. The key observation is that some obscure internet forum might refer to feet using a rare niche term, say, "secondary balance units."
+Now, the model's training data contains a mix of benign images and sensitive content. The key observation is that some obscure internet forum might refer to feet using a rare niche term ... say, "secondary balance units."
 
 ---
 
