@@ -387,11 +387,18 @@ def assemble_video(
                 sped_clips.append(sped)
             audio_clips = sped_clips
 
-        # Generate ambient noise for pauses using the TTS model itself
+        # Generate ambient noise for pauses using the TTS model itself.
+        # Cache it so the preview playback can reuse it without the TTS model.
+        cache_dir = Path(".cache")
+        cache_dir.mkdir(exist_ok=True)
+        cached_ambient = cache_dir / "ambient_cached.wav"
+        if not cached_ambient.exists():
+            _generate_ambient_pause(
+                engine, voice_wav_path, cached_ambient, pause, language=language,
+            )
         ambient_path = tmpdir / "ambient.wav"
-        _generate_ambient_pause(
-            engine, voice_wav_path, ambient_path, pause, language=language,
-        )
+        import shutil
+        shutil.copy2(cached_ambient, ambient_path)
 
         # Split click into press (down) and release (up), ~75ms boundary.
         # Down plays at end of previous slide, up plays at start of new slide.

@@ -223,26 +223,39 @@ async def api_video():
 
 @app.post("/api/build-preview-audio")
 async def api_build_preview_audio(pause: float = Form(1.0), use_click: bool = Form(True)):
-    """Build a single audio file with all slides + pauses + clicks for preview playback."""
-    if engine is None:
-        return JSONResponse({"error": "Load TTS engine first"}, status_code=400)
-    if voice_wav_path is None:
-        return JSONResponse({"error": "Upload voice sample first"}, status_code=400)
+    """Build a single audio file with all slides + pauses + clicks for preview playback.
 
+    Uses only cached audio clips, no TTS model needed.
+    """
     import subprocess
     import tempfile
 
     slides = _parse_current_script()
     AUDIO_DIR.mkdir(exist_ok=True)
-    clips = generate_audio_clips(slides, engine, voice_wav_path, AUDIO_DIR, "en")
 
-    from generate import _generate_ambient_pause
+    # Collect cached clips (don't generate, just use what's there)
+    clips = []
+    for slide_num, text in slides:
+        clip = AUDIO_DIR / f"slide_{slide_num:02d}.wav"
+        if not clip.exists():
+            return JSONResponse(
+                {"error": f"Slide {slide_num} has no audio. Generate it first."},
+                status_code=400,
+            )
+        clips.append(clip)
+
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
 
-        # Generate ambient pause
-        ambient_path = tmpdir / "ambient.wav"
-        _generate_ambient_pause(engine, voice_wav_path, ambient_path, pause, language="en")
+        # Use cached ambient noise, or generate silence as fallback
+        ambient_path = WORK_DIR / "ambient_cached.wav"
+        if not ambient_path.exists():
+            subprocess.run(
+                ["ffmpeg", "-y", "-f", "lavfi", "-t", str(pause),
+                 "-i", "anullsrc=r=24000:cl=mono", "-c:a", "pcm_s16le",
+                 str(ambient_path)],
+                check=True, capture_output=True,
+            )
 
         # Prepare click sounds
         click_path = Path("assets/click.wav")
