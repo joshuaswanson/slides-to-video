@@ -1372,8 +1372,13 @@
       }
 
       // Select slide
-      function selectSlide(index) {
+      function selectSlide(index, fromPlayAll = false) {
         if (index < 0 || index >= slides.length) return;
+
+        // If user clicks a slide during Play All, stop playback
+        if (isPlayingAll && !fromPlayAll) {
+          togglePlayAll();
+        }
 
         // Save current script before switching
         if (selectedSlideIndex !== index && slides.length > 0) {
@@ -1664,7 +1669,7 @@
             }
 
             if (currentSlideIdx !== selectedSlideIndex) {
-              selectSlide(currentSlideIdx);
+              selectSlide(currentSlideIdx, true);
             }
 
             requestAnimationFrame(advanceSlides);
