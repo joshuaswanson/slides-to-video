@@ -327,15 +327,20 @@ async def api_build_preview_audio(pause: float = Form(1.0), use_click: bool = Fo
             parts.append(post)
             current_time += pause
 
-        # Concatenate all parts
+        # Concatenate all parts - use absolute paths to avoid issues
         concat_file = tmpdir / "concat.txt"
-        concat_file.write_text("\n".join(f"file '{p}'" for p in parts))
-        output = WORK_DIR / "preview_audio.wav"
-        subprocess.run(
-            ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
-             "-i", str(concat_file), "-c", "copy", str(output)],
-            check=True, capture_output=True,
+        concat_file.write_text(
+            "\n".join(f"file '{p.resolve()}'" for p in parts)
         )
+        output = WORK_DIR / "preview_audio.wav"
+        result = subprocess.run(
+            ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
+             "-i", str(concat_file), "-c:a", "pcm_s16le", str(output)],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0:
+            print(f"FFmpeg concat error: {result.stderr}")
+            print(f"Concat file contents:\n{concat_file.read_text()[:500]}")
 
     return {
         "status": "ok",
