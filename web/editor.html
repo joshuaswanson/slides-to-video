@@ -1586,10 +1586,18 @@
         }
       }
 
+      let previewAudioSource = null;
+      let previewTimestamps = [];
+
       async function togglePlayAll() {
         if (isPlayingAll) {
           playAllAbort = true;
-          stopPlayback();
+          if (previewAudioSource) {
+            try {
+              previewAudioSource.stop();
+            } catch (e) {}
+            previewAudioSource = null;
+          }
           isPlayingAll = false;
           document.getElementById("playAllIcon").style.display = "";
           document.getElementById("stopAllIcon").style.display = "none";
@@ -1601,47 +1609,75 @@
         playAllAbort = false;
         document.getElementById("playAllIcon").style.display = "none";
         document.getElementById("stopAllIcon").style.display = "";
-        document.getElementById("playAllLabel").textContent = "Stop";
+        document.getElementById("playAllLabel").textContent = "Building...";
 
-        const pauseDuration = 1.0;
-
-        for (let i = 0; i < slides.length; i++) {
-          if (playAllAbort) break;
-
-          selectSlide(i);
-          const slide = slides[i];
-          if (!slide.has_audio) continue;
-
-          await loadAudio(slide.slide_num);
-          if (playAllAbort) break;
-
-          // Play the slide audio
-          playOffset = 0;
-          startPlayback();
-
-          // Wait for it to finish
-          await new Promise((resolve) => {
-            const check = () => {
-              if (playAllAbort || !isPlaying) {
-                resolve();
-              } else {
-                requestAnimationFrame(check);
-              }
-            };
-            check();
+        try {
+          // Build the combined preview audio on the server
+          const formData = new FormData();
+          formData.append("pause", "1.0");
+          formData.append("use_click", "true");
+          const resp = await fetch(`${API_BASE}/api/build-preview-audio`, {
+            method: "POST",
+            body: formData,
           });
+          const data = await resp.json();
+          if (data.status !== "ok") {
+            showToast(data.error || "Failed to build preview", "error");
+            togglePlayAll();
+            return;
+          }
 
-          if (playAllAbort) break;
+          previewTimestamps = data.timestamps;
+          document.getElementById("playAllLabel").textContent = "Stop";
 
-          // Pause between slides
-          await new Promise((r) => setTimeout(r, pauseDuration * 1000));
+          // Fetch and decode the preview audio
+          if (!audioContext) audioContext = new AudioContext();
+          const audioResp = await fetch(`${API_BASE}/api/preview-audio`);
+          const arrayBuf = await audioResp.arrayBuffer();
+          const buffer = await audioContext.decodeAudioData(arrayBuf);
+
+          if (playAllAbort) return;
+
+          // Play it
+          previewAudioSource = audioContext.createBufferSource();
+          previewAudioSource.buffer = buffer;
+          previewAudioSource.connect(audioContext.destination);
+          previewAudioSource.onended = () => {
+            if (isPlayingAll) togglePlayAll();
+          };
+
+          const startTime = audioContext.currentTime;
+          previewAudioSource.start(0);
+
+          // Advance slides based on timestamps
+          const advanceSlides = () => {
+            if (!isPlayingAll || playAllAbort) return;
+            const elapsed = audioContext.currentTime - startTime;
+
+            // Find which slide we should be on
+            let currentSlideIdx = 0;
+            for (let i = previewTimestamps.length - 1; i >= 0; i--) {
+              if (elapsed >= previewTimestamps[i].time) {
+                currentSlideIdx = i;
+                break;
+              }
+            }
+
+            if (currentSlideIdx !== selectedSlideIndex) {
+              selectSlide(currentSlideIdx);
+            }
+
+            requestAnimationFrame(advanceSlides);
+          };
+          advanceSlides();
+        } catch (err) {
+          showToast("Playback error: " + err.message, "error");
+          isPlayingAll = false;
+          playAllAbort = false;
+          document.getElementById("playAllIcon").style.display = "";
+          document.getElementById("stopAllIcon").style.display = "none";
+          document.getElementById("playAllLabel").textContent = "Play All";
         }
-
-        isPlayingAll = false;
-        playAllAbort = false;
-        document.getElementById("playAllIcon").style.display = "";
-        document.getElementById("stopAllIcon").style.display = "none";
-        document.getElementById("playAllLabel").textContent = "Play All";
       }
 
       function seekAudio(event) {

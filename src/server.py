@@ -1,13 +1,16 @@
 """FastAPI backend for the slides-to-video editor.
 
-Launch with: uv run server.py
+Launch with: uv run src/server.py
 Then open http://localhost:8000 in your browser.
 """
 
 from __future__ import annotations
 
-import json
+import sys
 from pathlib import Path
+
+# Ensure src/ is on the path when running from project root
+sys.path.insert(0, str(Path(__file__).parent))
 
 import soundfile as sf
 from fastapi import FastAPI, File, UploadFile, Form
@@ -48,7 +51,7 @@ def _parse_current_script() -> list[tuple[int, str]]:
 
 @app.get("/")
 async def index():
-    return FileResponse("editor.html")
+    return FileResponse("web/editor.html")
 
 
 @app.post("/api/load-engine")
@@ -198,7 +201,7 @@ async def api_build_video(
     clips = generate_audio_clips(slides, engine, voice_wav_path, AUDIO_DIR, "en")
     images = extract_slide_images(Path("presentation.pdf"), SLIDES_DIR)
 
-    click_path = Path("click.wav") if use_click and Path("click.wav").exists() else None
+    click_path = Path("assets/click.wav") if use_click and Path("assets/click.wav").exists() else None
     output = WORK_DIR / "video.mp4"
 
     assemble_video(
@@ -216,6 +219,125 @@ async def api_video():
     if video_path.exists():
         return FileResponse(video_path, media_type="video/mp4")
     return JSONResponse({"error": "Video not found"}, status_code=404)
+
+
+@app.post("/api/build-preview-audio")
+async def api_build_preview_audio(pause: float = Form(1.0), use_click: bool = Form(True)):
+    """Build a single audio file with all slides + pauses + clicks for preview playback."""
+    if engine is None:
+        return JSONResponse({"error": "Load TTS engine first"}, status_code=400)
+    if voice_wav_path is None:
+        return JSONResponse({"error": "Upload voice sample first"}, status_code=400)
+
+    import subprocess
+    import tempfile
+
+    slides = _parse_current_script()
+    AUDIO_DIR.mkdir(exist_ok=True)
+    clips = generate_audio_clips(slides, engine, voice_wav_path, AUDIO_DIR, "en")
+
+    from generate import _generate_ambient_pause
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = Path(tmpdir)
+
+        # Generate ambient pause
+        ambient_path = tmpdir / "ambient.wav"
+        _generate_ambient_pause(engine, voice_wav_path, ambient_path, pause, language="en")
+
+        # Prepare click sounds
+        click_path = Path("assets/click.wav")
+        click_down_path = None
+        click_up_path = None
+        if use_click and click_path.exists():
+            click_down_path = tmpdir / "click_down.wav"
+            click_up_path = tmpdir / "click_up.wav"
+            subprocess.run(
+                ["ffmpeg", "-y", "-i", str(click_path),
+                 "-t", "0.075", "-ar", "24000", "-ac", "1",
+                 "-c:a", "pcm_s16le", str(click_down_path)],
+                check=True, capture_output=True,
+            )
+            subprocess.run(
+                ["ffmpeg", "-y", "-i", str(click_path),
+                 "-ss", "0.075", "-ar", "24000", "-ac", "1",
+                 "-c:a", "pcm_s16le", str(click_up_path)],
+                check=True, capture_output=True,
+            )
+
+        # Build concat list: for each slide, add pause+clip
+        parts = []
+        timestamps = []  # (start_time, slide_num) for each slide's narration start
+        current_time = 0.0
+
+        for i, (clip, (slide_num, _)) in enumerate(zip(clips, slides)):
+            # Pre-pause (with click up if not first slide)
+            pre = tmpdir / f"pre_{i}.wav"
+            if click_up_path and i > 0:
+                subprocess.run(
+                    ["ffmpeg", "-y", "-i", str(ambient_path), "-i", str(click_up_path),
+                     "-filter_complex",
+                     "[1:a]apad=whole_dur=0[click];[0:a][click]amix=inputs=2:duration=first",
+                     "-c:a", "pcm_s16le", str(pre)],
+                    check=True, capture_output=True,
+                )
+            else:
+                subprocess.run(
+                    ["ffmpeg", "-y", "-i", str(ambient_path), "-c:a", "pcm_s16le", str(pre)],
+                    check=True, capture_output=True,
+                )
+            parts.append(pre)
+            current_time += pause
+
+            timestamps.append({"time": round(current_time, 3), "slide_num": slide_num})
+            clip_dur = sf.info(str(clip)).duration
+            parts.append(clip)
+            current_time += clip_dur
+
+            # Post-pause (with click down if not last)
+            post = tmpdir / f"post_{i}.wav"
+            is_last = i == len(clips) - 1
+            if click_down_path and not is_last:
+                click_offset = max(0, pause - 0.075)
+                subprocess.run(
+                    ["ffmpeg", "-y", "-i", str(ambient_path), "-i", str(click_down_path),
+                     "-filter_complex",
+                     f"[1:a]adelay={int(click_offset*1000)}|{int(click_offset*1000)},apad=whole_dur=0[click];"
+                     "[0:a][click]amix=inputs=2:duration=first",
+                     "-c:a", "pcm_s16le", str(post)],
+                    check=True, capture_output=True,
+                )
+            else:
+                subprocess.run(
+                    ["ffmpeg", "-y", "-i", str(ambient_path), "-c:a", "pcm_s16le", str(post)],
+                    check=True, capture_output=True,
+                )
+            parts.append(post)
+            current_time += pause
+
+        # Concatenate all parts
+        concat_file = tmpdir / "concat.txt"
+        concat_file.write_text("\n".join(f"file '{p}'" for p in parts))
+        output = WORK_DIR / "preview_audio.wav"
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
+             "-i", str(concat_file), "-c", "copy", str(output)],
+            check=True, capture_output=True,
+        )
+
+    return {
+        "status": "ok",
+        "audio_url": "/api/preview-audio",
+        "timestamps": timestamps,
+        "total_duration": round(current_time, 1),
+    }
+
+
+@app.get("/api/preview-audio")
+async def api_preview_audio():
+    path = WORK_DIR / "preview_audio.wav"
+    if path.exists():
+        return FileResponse(path, media_type="audio/wav")
+    return JSONResponse({"error": "Preview audio not found"}, status_code=404)
 
 
 if __name__ == "__main__":

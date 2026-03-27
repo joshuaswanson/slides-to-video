@@ -1,7 +1,7 @@
 """Generate a narrated presentation video from slides, a script, and a voice sample.
 
 Usage:
-    uv run generate.py --slides presentation.pdf --script script.md --voice voice.m4a
+    uv run src/generate.py --slides presentation.pdf --script script.md --voice voice.m4a
 
 Requires:
     - A GPU with CUDA support (for TTS voice cloning)
