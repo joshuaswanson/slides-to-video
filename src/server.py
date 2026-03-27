@@ -247,15 +247,22 @@ async def api_build_preview_audio(pause: float = Form(1.0), use_click: bool = Fo
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
 
-        # Use cached ambient noise, or generate silence as fallback
+        # Use cached ambient noise. If not cached yet, generate it via TTS
+        # (feeds spaces to the model to get its characteristic background noise).
         ambient_path = WORK_DIR / "ambient_cached.wav"
         if not ambient_path.exists():
-            subprocess.run(
-                ["ffmpeg", "-y", "-f", "lavfi", "-t", str(pause),
-                 "-i", "anullsrc=r=24000:cl=mono", "-c:a", "pcm_s16le",
-                 str(ambient_path)],
-                check=True, capture_output=True,
-            )
+            if engine is not None and voice_wav_path is not None:
+                from generate import _generate_ambient_pause
+                _generate_ambient_pause(
+                    engine, voice_wav_path, ambient_path, pause, language="en",
+                )
+            else:
+                subprocess.run(
+                    ["ffmpeg", "-y", "-f", "lavfi", "-t", str(pause),
+                     "-i", "anullsrc=r=24000:cl=mono", "-c:a", "pcm_s16le",
+                     str(ambient_path)],
+                    check=True, capture_output=True,
+                )
 
         # Prepare click sounds
         click_path = Path("assets/click.wav")
