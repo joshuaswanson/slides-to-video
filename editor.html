@@ -1,0 +1,1840 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Slides to Video</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg-primary: #1a1a1e;
+        --bg-secondary: #222226;
+        --bg-tertiary: #2a2a2f;
+        --bg-elevated: #303036;
+        --border-subtle: #3a3a40;
+        --border-muted: #2e2e34;
+        --text-primary: #e8e8ec;
+        --text-secondary: #a0a0a8;
+        --text-muted: #6a6a72;
+        --accent-green: #4caf50;
+        --accent-green-dim: #3d8b40;
+        --accent-green-glow: rgba(76, 175, 80, 0.15);
+        --accent-blue: #5b9bd5;
+        --accent-red: #e05555;
+        --accent-orange: #e09040;
+        --font-ui: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-ui);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      /* Noise texture overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.025;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        background-repeat: repeat;
+        background-size: 256px 256px;
+      }
+
+      /* Layout */
+      .app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      /* Top bar */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 48px;
+        padding: 0 16px;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-muted);
+        flex-shrink: 0;
+        gap: 12px;
+      }
+
+      .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .project-name {
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: -0.01em;
+        color: var(--text-primary);
+      }
+
+      .project-divider {
+        width: 1px;
+        height: 20px;
+        background: var(--border-subtle);
+      }
+
+      .project-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+
+      .topbar-center {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Settings dropdown */
+      .settings-toggle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          color 0.15s,
+          border-color 0.15s;
+      }
+
+      .settings-toggle:hover {
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        border-color: #4a4a50;
+      }
+
+      .settings-toggle svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .settings-panel {
+        display: none;
+        position: absolute;
+        top: 48px;
+        right: 8px;
+        width: 320px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        z-index: 100;
+        padding: 16px;
+      }
+
+      .settings-panel.open {
+        display: block;
+      }
+
+      .settings-panel h3 {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 12px;
+      }
+
+      .settings-row {
+        margin-bottom: 14px;
+      }
+
+      .settings-row label {
+        display: block;
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+
+      .settings-row select,
+      .settings-row input[type="file"] {
+        width: 100%;
+        padding: 7px 10px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .settings-row select:focus {
+        border-color: var(--accent-green);
+      }
+
+      .settings-row select option {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+
+      .voice-upload-area {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .voice-upload-btn {
+        padding: 7px 14px;
+        background: var(--bg-tertiary);
+        border: 1px dashed var(--border-subtle);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          color 0.15s;
+        flex: 1;
+        text-align: center;
+      }
+
+      .voice-upload-btn:hover {
+        border-color: var(--accent-green);
+        color: var(--text-primary);
+      }
+
+      .voice-upload-btn.uploaded {
+        border-style: solid;
+        border-color: var(--accent-green-dim);
+        color: var(--accent-green);
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-ui);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+
+      .btn-primary {
+        background: var(--accent-green);
+        color: #fff;
+        border-color: var(--accent-green);
+      }
+
+      .btn-primary:hover {
+        background: #5cbf60;
+        border-color: #5cbf60;
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .btn-primary.pulse {
+        animation: pulse-glow 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+        }
+        50% {
+          box-shadow: 0 0 12px 3px rgba(76, 175, 80, 0.3);
+        }
+      }
+
+      .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        border-color: var(--border-subtle);
+      }
+
+      .btn-secondary:hover {
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        border-color: #4a4a50;
+      }
+
+      .btn-secondary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-secondary);
+        border-color: transparent;
+        padding: 6px 8px;
+      }
+
+      .btn-ghost:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+
+      .btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* Generate all button */
+      .btn-generate-all {
+        background: var(--bg-tertiary);
+        color: var(--accent-blue);
+        border-color: rgba(91, 155, 213, 0.3);
+      }
+
+      .btn-generate-all:hover {
+        background: rgba(91, 155, 213, 0.1);
+        border-color: rgba(91, 155, 213, 0.5);
+      }
+
+      /* Main content area */
+      .main {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      /* Slide preview panel */
+      .preview-panel {
+        flex: 6;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: var(--bg-primary);
+        position: relative;
+        min-width: 0;
+      }
+
+      .slide-preview-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 720px;
+        aspect-ratio: 16 / 9;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          0 2px 8px rgba(0, 0, 0, 0.2);
+        background: #111114;
+      }
+
+      .slide-preview-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        background: #111114;
+      }
+
+      .slide-number-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        padding: 4px 10px;
+        border-radius: var(--radius-sm);
+        letter-spacing: 0.02em;
+      }
+
+      .no-slides-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 720px;
+        aspect-ratio: 16 / 9;
+        border-radius: var(--radius-lg);
+        border: 2px dashed var(--border-subtle);
+        color: var(--text-muted);
+        font-size: 14px;
+        gap: 8px;
+      }
+
+      .no-slides-placeholder svg {
+        width: 40px;
+        height: 40px;
+        opacity: 0.4;
+      }
+
+      /* Script editor panel */
+      .script-panel {
+        flex: 4;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-secondary);
+        border-left: 1px solid var(--border-muted);
+        min-width: 0;
+      }
+
+      .script-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-muted);
+        flex-shrink: 0;
+      }
+
+      .script-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .script-header h2 {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .script-slide-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--accent-green);
+        background: var(--accent-green-glow);
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-weight: 500;
+      }
+
+      .script-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        padding: 0;
+      }
+
+      .script-textarea-wrapper {
+        flex: 1;
+        position: relative;
+        min-height: 0;
+      }
+
+      .script-textarea {
+        width: 100%;
+        height: 100%;
+        padding: 16px;
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        line-height: 1.7;
+        resize: none;
+        outline: none;
+        tab-size: 2;
+      }
+
+      .script-textarea::placeholder {
+        color: var(--text-muted);
+      }
+
+      .script-textarea:focus {
+        background: rgba(76, 175, 80, 0.02);
+      }
+
+      /* Save indicator */
+      .save-indicator {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        transition: color 0.3s;
+      }
+
+      .save-indicator.saving {
+        color: var(--accent-orange);
+      }
+
+      .save-indicator.saved {
+        color: var(--accent-green-dim);
+      }
+
+      /* Audio section */
+      .audio-section {
+        border-top: 1px solid var(--border-muted);
+        padding: 14px 16px;
+        flex-shrink: 0;
+      }
+
+      .audio-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .audio-section-header h3 {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .audio-duration {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .waveform-container {
+        position: relative;
+        height: 56px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+
+      .waveform-container canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .waveform-playhead {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--accent-green);
+        left: 0;
+        transition: left 0.05s linear;
+        pointer-events: none;
+        box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+      }
+
+      .waveform-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--text-muted);
+        font-size: 11px;
+        font-family: var(--font-mono);
+      }
+
+      .audio-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .play-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-subtle);
+        border-radius: 50%;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+
+      .play-btn:hover {
+        background: var(--accent-green);
+        border-color: var(--accent-green);
+      }
+
+      .play-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .btn-regen {
+        font-size: 11px;
+        padding: 5px 12px;
+      }
+
+      /* Timeline */
+      .timeline-wrapper {
+        flex-shrink: 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-muted);
+      }
+
+      .timeline-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--border-muted);
+      }
+
+      .timeline-header h3 {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .timeline-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .timeline-total {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .timeline-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 12px 16px 14px;
+        position: relative;
+      }
+
+      .timeline-scroll::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      .timeline-scroll::-webkit-scrollbar-track {
+        background: var(--bg-primary);
+        border-radius: 3px;
+      }
+
+      .timeline-scroll::-webkit-scrollbar-thumb {
+        background: var(--border-subtle);
+        border-radius: 3px;
+      }
+
+      .timeline-scroll::-webkit-scrollbar-thumb:hover {
+        background: #4a4a50;
+      }
+
+      .timeline-track {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        min-width: min-content;
+        position: relative;
+      }
+
+      .timeline-slide {
+        width: 130px;
+        flex-shrink: 0;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        border: 2px solid transparent;
+        overflow: hidden;
+        background: var(--bg-tertiary);
+        transition:
+          border-color 0.15s,
+          transform 0.1s;
+        position: relative;
+      }
+
+      .timeline-slide:hover {
+        border-color: var(--border-subtle);
+        transform: translateY(-1px);
+      }
+
+      .timeline-slide.selected {
+        border-color: var(--accent-green);
+        box-shadow: 0 0 12px rgba(76, 175, 80, 0.2);
+      }
+
+      .timeline-slide.has-audio {
+        border-color: var(--accent-green-dim);
+      }
+
+      .timeline-slide.has-audio.selected {
+        border-color: var(--accent-green);
+      }
+
+      .timeline-slide-thumb {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #111114;
+        overflow: hidden;
+      }
+
+      .timeline-slide-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .timeline-slide-info {
+        padding: 5px 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .timeline-slide-num {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      .timeline-slide-dur {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+
+      .timeline-slide-status {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--text-muted);
+      }
+
+      .timeline-slide.has-audio .timeline-slide-status {
+        background: var(--accent-green);
+        box-shadow: 0 0 6px rgba(76, 175, 80, 0.4);
+      }
+
+      .timeline-gap {
+        width: 8px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .timeline-gap-line {
+        width: 2px;
+        height: 24px;
+        background: var(--border-muted);
+        border-radius: 1px;
+      }
+
+      /* Playhead on timeline */
+      .timeline-playhead {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--accent-green);
+        z-index: 10;
+        pointer-events: none;
+        display: none;
+        box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+      }
+
+      .timeline-playhead::before {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -4px;
+        width: 10px;
+        height: 6px;
+        background: var(--accent-green);
+        clip-path: polygon(0 0, 100% 0, 50% 100%);
+      }
+
+      /* Loading spinner */
+      .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid transparent;
+        border-top-color: currentColor;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Status toast */
+      .toast-container {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 200;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        pointer-events: none;
+      }
+
+      .toast {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-primary);
+        font-size: 13px;
+        padding: 8px 16px;
+        border-radius: var(--radius-md);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transform: translateY(8px);
+        animation: toast-in 0.2s ease forwards;
+        pointer-events: auto;
+      }
+
+      .toast.error {
+        border-color: var(--accent-red);
+      }
+
+      .toast.success {
+        border-color: var(--accent-green-dim);
+      }
+
+      @keyframes toast-in {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes toast-out {
+        to {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+      }
+
+      /* Progress bar */
+      .progress-bar-wrapper {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--bg-primary);
+        display: none;
+      }
+
+      .progress-bar-wrapper.active {
+        display: block;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: var(--accent-green);
+        width: 0%;
+        transition: width 0.3s;
+        border-radius: 0 2px 2px 0;
+      }
+
+      /* Loading overlay for slide */
+      .loading-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(17, 17, 20, 0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-lg);
+        z-index: 5;
+      }
+
+      .loading-overlay.active {
+        display: flex;
+      }
+
+      .loading-overlay .spinner {
+        width: 24px;
+        height: 24px;
+        border-width: 3px;
+        color: var(--accent-green);
+      }
+
+      /* Responsive */
+      @media (max-width: 960px) {
+        .main {
+          flex-direction: column;
+        }
+        .preview-panel {
+          flex: none;
+          height: 40vh;
+          padding: 16px;
+        }
+        .script-panel {
+          flex: 1;
+          border-left: none;
+          border-top: 1px solid var(--border-muted);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- Top bar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <span class="project-name">Slides to Video</span>
+          <div class="project-divider"></div>
+          <span class="project-label">Editor</span>
+        </div>
+        <div class="topbar-center">
+          <button
+            class="btn btn-generate-all"
+            id="btnGenerateAll"
+            onclick="generateAll()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Generate All Audio
+          </button>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-primary" id="btnExport" onclick="buildVideo()">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Export Video
+          </button>
+          <div style="position: relative">
+            <button
+              class="settings-toggle"
+              id="settingsBtn"
+              onclick="toggleSettings()"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                />
+              </svg>
+              Settings
+            </button>
+            <div class="settings-panel" id="settingsPanel">
+              <h3>Configuration</h3>
+              <div class="settings-row">
+                <label>TTS Engine</label>
+                <select id="ttsEngine" onchange="loadEngine()">
+                  <option value="qwen3">Qwen3</option>
+                  <option value="cosyvoice">CosyVoice</option>
+                  <option value="f5tts">F5-TTS</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <label>Language</label>
+                <select id="language">
+                  <option value="en">English</option>
+                  <option value="zh">Chinese</option>
+                  <option value="ja">Japanese</option>
+                  <option value="ko">Korean</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="es">Spanish</option>
+                  <option value="ar">Arabic</option>
+                  <option value="ru">Russian</option>
+                  <option value="pt">Portuguese</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <label>Voice Sample</label>
+                <div class="voice-upload-area">
+                  <input
+                    type="file"
+                    id="voiceFileInput"
+                    accept="audio/*"
+                    style="display: none"
+                    onchange="uploadVoice()"
+                  />
+                  <button
+                    class="voice-upload-btn"
+                    id="voiceUploadBtn"
+                    onclick="document.getElementById('voiceFileInput').click()"
+                  >
+                    Choose audio file...
+                  </button>
+                </div>
+              </div>
+              <div class="settings-row">
+                <label>Device</label>
+                <select id="device">
+                  <option value="cuda">cuda</option>
+                  <option value="cuda:0">cuda:0</option>
+                  <option value="cuda:1">cuda:1</option>
+                  <option value="cpu">cpu</option>
+                </select>
+              </div>
+              <button
+                class="btn btn-primary"
+                style="width: 100%; justify-content: center; margin-top: 4px"
+                onclick="loadEngine()"
+              >
+                Load Engine
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main area -->
+      <div class="main">
+        <!-- Slide preview -->
+        <div class="preview-panel">
+          <div
+            id="slidePreview"
+            class="slide-preview-wrapper"
+            style="display: none"
+          >
+            <img id="slideImage" src="" alt="Slide preview" />
+            <span class="slide-number-badge" id="slideNumBadge">Slide 1</span>
+            <div class="loading-overlay" id="previewLoading">
+              <div class="spinner"></div>
+            </div>
+          </div>
+          <div id="noSlidesPlaceholder" class="no-slides-placeholder">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+            <span>Load slides to begin</span>
+          </div>
+        </div>
+
+        <!-- Script editor -->
+        <div class="script-panel">
+          <div class="script-header">
+            <div class="script-header-left">
+              <h2>Script</h2>
+              <span class="script-slide-label" id="scriptSlideLabel"
+                >Slide 1</span
+              >
+            </div>
+            <span class="save-indicator" id="saveIndicator"></span>
+          </div>
+          <div class="script-body">
+            <div class="script-textarea-wrapper">
+              <textarea
+                class="script-textarea"
+                id="scriptTextarea"
+                placeholder="Enter narration text for this slide..."
+                spellcheck="false"
+              ></textarea>
+            </div>
+          </div>
+          <div class="audio-section">
+            <div class="audio-section-header">
+              <h3>Audio</h3>
+              <span class="audio-duration" id="audioDuration">--:--</span>
+            </div>
+            <div
+              class="waveform-container"
+              id="waveformContainer"
+              onclick="seekAudio(event)"
+            >
+              <canvas id="waveformCanvas"></canvas>
+              <div class="waveform-playhead" id="waveformPlayhead"></div>
+              <div class="waveform-placeholder" id="waveformPlaceholder">
+                No audio generated
+              </div>
+            </div>
+            <div class="audio-controls">
+              <button class="play-btn" id="playBtn" onclick="togglePlayback()">
+                <svg
+                  id="playIcon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  stroke="none"
+                >
+                  <polygon points="6 3 20 12 6 21 6 3" />
+                </svg>
+                <svg
+                  id="pauseIcon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  stroke="none"
+                  style="display: none"
+                >
+                  <rect x="5" y="3" width="4" height="18" />
+                  <rect x="15" y="3" width="4" height="18" />
+                </svg>
+              </button>
+              <button
+                class="btn btn-secondary btn-regen"
+                id="btnRegenAudio"
+                onclick="regenerateAudio()"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                </svg>
+                Regenerate Audio
+              </button>
+              <button
+                class="btn btn-ghost"
+                onclick="saveScript()"
+                title="Save script"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2 2h11l5 5v11a2 2 0 0 1-2 2z"
+                  />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="progress-bar-wrapper" id="progressBar">
+            <div class="progress-bar" id="progressFill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline-wrapper">
+        <div class="timeline-header">
+          <h3>Timeline</h3>
+          <div class="timeline-info">
+            <span class="timeline-total" id="timelineTotal">0 slides</span>
+          </div>
+        </div>
+        <div class="timeline-scroll" id="timelineScroll">
+          <div class="timeline-track" id="timelineTrack">
+            <div class="timeline-playhead" id="timelinePlayhead"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+      // State
+      let slides = [];
+      let selectedSlideIndex = 0;
+      let audioContext = null;
+      let currentAudioBuffer = null;
+      let audioSource = null;
+      let isPlaying = false;
+      let playStartTime = 0;
+      let playOffset = 0;
+      let animFrameId = null;
+      let saveTimeout = null;
+      let videoReady = false;
+
+      const API_BASE = window.location.origin;
+
+      // Init
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchSlides();
+        document.addEventListener("click", (e) => {
+          const panel = document.getElementById("settingsPanel");
+          const btn = document.getElementById("settingsBtn");
+          if (
+            panel.classList.contains("open") &&
+            !panel.contains(e.target) &&
+            !btn.contains(e.target)
+          ) {
+            panel.classList.remove("open");
+          }
+        });
+      });
+
+      // Toast notifications
+      function showToast(message, type = "info") {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.animation = "toast-out 0.2s ease forwards";
+          setTimeout(() => toast.remove(), 200);
+        }, 3000);
+      }
+
+      // Settings panel
+      function toggleSettings() {
+        document.getElementById("settingsPanel").classList.toggle("open");
+      }
+
+      // Fetch slides
+      async function fetchSlides() {
+        try {
+          const res = await fetch(`${API_BASE}/api/slides`);
+          if (!res.ok) throw new Error("Failed to load slides");
+          slides = await res.json();
+          renderTimeline();
+          if (slides.length > 0) {
+            selectSlide(0);
+          }
+          updateTimelineInfo();
+        } catch (e) {
+          // Demo mode with placeholder data if API unavailable
+          console.warn("API unavailable, showing empty state");
+        }
+      }
+
+      // Render timeline
+      function renderTimeline() {
+        const track = document.getElementById("timelineTrack");
+        // Keep the playhead element
+        const playhead = document.getElementById("timelinePlayhead");
+        track.innerHTML = "";
+        track.appendChild(playhead);
+
+        slides.forEach((slide, i) => {
+          if (i > 0) {
+            const gap = document.createElement("div");
+            gap.className = "timeline-gap";
+            gap.innerHTML = '<div class="timeline-gap-line"></div>';
+            track.appendChild(gap);
+          }
+
+          const el = document.createElement("div");
+          el.className = "timeline-slide";
+          if (slide.has_audio) el.classList.add("has-audio");
+          if (i === selectedSlideIndex) el.classList.add("selected");
+          el.onclick = () => selectSlide(i);
+
+          const dur = slide.duration ? `${slide.duration.toFixed(1)}s` : "--";
+
+          el.innerHTML = `
+      <div class="timeline-slide-thumb">
+        <img src="${API_BASE}/api/slide-image/${slide.slide_num}" alt="Slide ${slide.slide_num}" loading="lazy">
+      </div>
+      <div class="timeline-slide-info">
+        <span class="timeline-slide-num">${slide.slide_num}</span>
+        <span class="timeline-slide-dur">${dur}</span>
+      </div>
+      <div class="timeline-slide-status"></div>
+    `;
+          track.appendChild(el);
+        });
+      }
+
+      function updateTimelineInfo() {
+        const total = slides.length;
+        const totalDur = slides.reduce((sum, s) => sum + (s.duration || 0), 0);
+        const durStr = totalDur > 0 ? ` / ${totalDur.toFixed(1)}s` : "";
+        document.getElementById("timelineTotal").textContent =
+          `${total} slide${total !== 1 ? "s" : ""}${durStr}`;
+      }
+
+      // Select slide
+      function selectSlide(index) {
+        if (index < 0 || index >= slides.length) return;
+
+        // Save current script before switching
+        if (selectedSlideIndex !== index && slides.length > 0) {
+          saveScriptSilent();
+        }
+
+        stopPlayback();
+        selectedSlideIndex = index;
+        const slide = slides[index];
+
+        // Update preview
+        const preview = document.getElementById("slidePreview");
+        const placeholder = document.getElementById("noSlidesPlaceholder");
+        const img = document.getElementById("slideImage");
+        const badge = document.getElementById("slideNumBadge");
+
+        preview.style.display = "block";
+        placeholder.style.display = "none";
+        img.src = `${API_BASE}/api/slide-image/${slide.slide_num}`;
+        badge.textContent = `Slide ${slide.slide_num}`;
+
+        // Update script
+        document.getElementById("scriptSlideLabel").textContent =
+          `Slide ${slide.slide_num}`;
+        document.getElementById("scriptTextarea").value = slide.text || "";
+
+        // Update audio
+        if (slide.has_audio) {
+          loadAudio(slide.slide_num);
+          document.getElementById("audioDuration").textContent = slide.duration
+            ? formatDuration(slide.duration)
+            : "--:--";
+          document.getElementById("waveformPlaceholder").style.display = "none";
+        } else {
+          currentAudioBuffer = null;
+          document.getElementById("audioDuration").textContent = "--:--";
+          document.getElementById("waveformPlaceholder").style.display = "flex";
+          clearWaveform();
+        }
+
+        // Update timeline selection
+        const items = document.querySelectorAll(".timeline-slide");
+        items.forEach((el, i) => {
+          el.classList.toggle("selected", i === index);
+        });
+
+        // Scroll selected into view
+        const selectedEl = items[index];
+        if (selectedEl) {
+          selectedEl.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "center",
+          });
+        }
+      }
+
+      // Format duration
+      function formatDuration(secs) {
+        const m = Math.floor(secs / 60);
+        const s = Math.floor(secs % 60);
+        const ms = Math.floor((secs % 1) * 10);
+        return `${m}:${String(s).padStart(2, "0")}.${ms}`;
+      }
+
+      // Audio loading and playback
+      async function loadAudio(slideNum) {
+        try {
+          if (!audioContext) {
+            audioContext = new (
+              window.AudioContext || window.webkitAudioContext
+            )();
+          }
+          const res = await fetch(`${API_BASE}/api/audio/${slideNum}`);
+          if (!res.ok) return;
+          const arrayBuffer = await res.arrayBuffer();
+          currentAudioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          drawWaveform(currentAudioBuffer);
+          document.getElementById("waveformPlaceholder").style.display = "none";
+        } catch (e) {
+          console.error("Failed to load audio:", e);
+        }
+      }
+
+      function drawWaveform(buffer) {
+        const canvas = document.getElementById("waveformCanvas");
+        const ctx = canvas.getContext("2d");
+        const container = canvas.parentElement;
+        const dpr = window.devicePixelRatio || 1;
+
+        canvas.width = container.clientWidth * dpr;
+        canvas.height = container.clientHeight * dpr;
+        canvas.style.width = container.clientWidth + "px";
+        canvas.style.height = container.clientHeight + "px";
+        ctx.scale(dpr, dpr);
+
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        const data = buffer.getChannelData(0);
+        const step = Math.ceil(data.length / width);
+        const centerY = height / 2;
+
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw waveform bars
+        const barWidth = 2;
+        const gap = 1;
+        const barsCount = Math.floor(width / (barWidth + gap));
+        const samplesPerBar = Math.floor(data.length / barsCount);
+
+        for (let i = 0; i < barsCount; i++) {
+          let sum = 0;
+          const start = i * samplesPerBar;
+          for (let j = 0; j < samplesPerBar; j++) {
+            sum += Math.abs(data[start + j] || 0);
+          }
+          const avg = sum / samplesPerBar;
+          const barHeight = Math.max(2, avg * height * 0.85);
+
+          const x = i * (barWidth + gap);
+          const gradient = ctx.createLinearGradient(
+            0,
+            centerY - barHeight / 2,
+            0,
+            centerY + barHeight / 2,
+          );
+          gradient.addColorStop(0, "rgba(76, 175, 80, 0.7)");
+          gradient.addColorStop(0.5, "rgba(76, 175, 80, 0.9)");
+          gradient.addColorStop(1, "rgba(76, 175, 80, 0.7)");
+
+          ctx.fillStyle = gradient;
+          ctx.fillRect(x, centerY - barHeight / 2, barWidth, barHeight);
+        }
+      }
+
+      function clearWaveform() {
+        const canvas = document.getElementById("waveformCanvas");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById("waveformPlayhead").style.left = "0px";
+      }
+
+      function togglePlayback() {
+        if (isPlaying) {
+          stopPlayback();
+        } else {
+          startPlayback();
+        }
+      }
+
+      function startPlayback() {
+        if (!currentAudioBuffer || !audioContext) return;
+
+        audioSource = audioContext.createBufferSource();
+        audioSource.buffer = currentAudioBuffer;
+        audioSource.connect(audioContext.destination);
+        audioSource.onended = () => {
+          if (isPlaying) stopPlayback();
+        };
+
+        playStartTime = audioContext.currentTime;
+        audioSource.start(0, playOffset);
+        isPlaying = true;
+
+        document.getElementById("playIcon").style.display = "none";
+        document.getElementById("pauseIcon").style.display = "block";
+
+        updatePlayhead();
+      }
+
+      function stopPlayback() {
+        if (audioSource) {
+          try {
+            audioSource.stop();
+          } catch (e) {}
+          audioSource = null;
+        }
+        if (isPlaying && audioContext) {
+          playOffset += audioContext.currentTime - playStartTime;
+          if (playOffset >= (currentAudioBuffer?.duration || 0)) {
+            playOffset = 0;
+          }
+        }
+        isPlaying = false;
+
+        document.getElementById("playIcon").style.display = "block";
+        document.getElementById("pauseIcon").style.display = "none";
+
+        if (animFrameId) {
+          cancelAnimationFrame(animFrameId);
+          animFrameId = null;
+        }
+      }
+
+      function updatePlayhead() {
+        if (!isPlaying || !currentAudioBuffer) return;
+
+        const elapsed = playOffset + (audioContext.currentTime - playStartTime);
+        const fraction = Math.min(elapsed / currentAudioBuffer.duration, 1);
+
+        const container = document.getElementById("waveformContainer");
+        const playhead = document.getElementById("waveformPlayhead");
+        playhead.style.left = fraction * container.clientWidth + "px";
+
+        document.getElementById("audioDuration").textContent =
+          formatDuration(elapsed);
+
+        if (fraction < 1) {
+          animFrameId = requestAnimationFrame(updatePlayhead);
+        }
+      }
+
+      function seekAudio(event) {
+        if (!currentAudioBuffer) return;
+        const container = document.getElementById("waveformContainer");
+        const rect = container.getBoundingClientRect();
+        const fraction = (event.clientX - rect.left) / rect.width;
+        playOffset = fraction * currentAudioBuffer.duration;
+
+        const playhead = document.getElementById("waveformPlayhead");
+        playhead.style.left = fraction * container.clientWidth + "px";
+
+        if (isPlaying) {
+          stopPlayback();
+          startPlayback();
+        }
+      }
+
+      // Script save with debounce
+      document
+        .getElementById("scriptTextarea")
+        ?.addEventListener("input", () => {
+          const indicator = document.getElementById("saveIndicator");
+          indicator.textContent = "Unsaved";
+          indicator.className = "save-indicator";
+
+          clearTimeout(saveTimeout);
+          saveTimeout = setTimeout(saveScript, 1500);
+        });
+
+      async function saveScript() {
+        if (slides.length === 0) return;
+        const slide = slides[selectedSlideIndex];
+        const text = document.getElementById("scriptTextarea").value;
+
+        const indicator = document.getElementById("saveIndicator");
+        indicator.textContent = "Saving...";
+        indicator.className = "save-indicator saving";
+
+        try {
+          const res = await fetch(
+            `${API_BASE}/api/update-script/${slide.slide_num}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text }),
+            },
+          );
+          if (!res.ok) throw new Error("Save failed");
+
+          slide.text = text;
+          indicator.textContent = "Saved";
+          indicator.className = "save-indicator saved";
+          setTimeout(() => {
+            indicator.textContent = "";
+            indicator.className = "save-indicator";
+          }, 2000);
+        } catch (e) {
+          indicator.textContent = "Save failed";
+          indicator.className = "save-indicator";
+          showToast("Failed to save script", "error");
+        }
+      }
+
+      function saveScriptSilent() {
+        if (slides.length === 0) return;
+        const slide = slides[selectedSlideIndex];
+        const text = document.getElementById("scriptTextarea").value;
+        if (text === slide.text) return;
+        slide.text = text;
+
+        fetch(`${API_BASE}/api/update-script/${slide.slide_num}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        }).catch(() => {});
+      }
+
+      // Regenerate audio for current slide
+      async function regenerateAudio() {
+        if (slides.length === 0) return;
+        const slide = slides[selectedSlideIndex];
+        const btn = document.getElementById("btnRegenAudio");
+        const origHTML = btn.innerHTML;
+
+        btn.innerHTML = '<span class="spinner"></span> Generating...';
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(
+            `${API_BASE}/api/generate/${slide.slide_num}`,
+            { method: "POST" },
+          );
+          if (!res.ok) throw new Error("Generation failed");
+          const data = await res.json();
+
+          slide.has_audio = true;
+          slide.duration = data.duration || 0;
+
+          await loadAudio(slide.slide_num);
+          document.getElementById("audioDuration").textContent = slide.duration
+            ? formatDuration(slide.duration)
+            : "--:--";
+
+          renderTimeline();
+          updateTimelineInfo();
+          showToast(`Audio generated for slide ${slide.slide_num}`, "success");
+        } catch (e) {
+          showToast("Failed to generate audio", "error");
+        } finally {
+          btn.innerHTML = origHTML;
+          btn.disabled = false;
+        }
+      }
+
+      // Generate all audio
+      async function generateAll() {
+        const btn = document.getElementById("btnGenerateAll");
+        const origHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner"></span> Generating...';
+        btn.disabled = true;
+
+        showProgress(true);
+
+        try {
+          const res = await fetch(`${API_BASE}/api/generate-all`, {
+            method: "POST",
+          });
+          if (!res.ok) throw new Error("Generation failed");
+
+          await fetchSlides();
+          showToast("All audio generated successfully", "success");
+        } catch (e) {
+          showToast("Failed to generate all audio", "error");
+        } finally {
+          btn.innerHTML = origHTML;
+          btn.disabled = false;
+          showProgress(false);
+        }
+      }
+
+      // Build video
+      async function buildVideo() {
+        const btn = document.getElementById("btnExport");
+        const origHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner"></span> Building...';
+        btn.disabled = true;
+        btn.classList.remove("pulse");
+
+        showProgress(true);
+
+        try {
+          const res = await fetch(`${API_BASE}/api/build-video`, {
+            method: "POST",
+          });
+          if (!res.ok) throw new Error("Build failed");
+          const data = await res.json();
+
+          videoReady = true;
+          btn.classList.add("pulse");
+          showToast("Video exported successfully!", "success");
+
+          if (data.video_url) {
+            window.open(data.video_url, "_blank");
+          }
+        } catch (e) {
+          showToast("Failed to build video", "error");
+        } finally {
+          btn.innerHTML = origHTML;
+          btn.disabled = false;
+          showProgress(false);
+        }
+      }
+
+      // Load TTS engine
+      async function loadEngine() {
+        const engineName = document.getElementById("ttsEngine").value;
+        const device = document.getElementById("device").value;
+
+        showToast(`Loading ${engineName} engine...`);
+
+        try {
+          const res = await fetch(`${API_BASE}/api/load-engine`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ engine: engineName, device }),
+          });
+          if (!res.ok) throw new Error("Failed to load engine");
+          showToast(`Engine "${engineName}" loaded on ${device}`, "success");
+        } catch (e) {
+          showToast("Failed to load engine", "error");
+        }
+      }
+
+      // Upload voice sample
+      async function uploadVoice() {
+        const fileInput = document.getElementById("voiceFileInput");
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const btn = document.getElementById("voiceUploadBtn");
+
+        try {
+          const res = await fetch(`${API_BASE}/api/upload-voice`, {
+            method: "POST",
+            body: formData,
+          });
+          if (!res.ok) throw new Error("Upload failed");
+
+          btn.textContent = file.name;
+          btn.classList.add("uploaded");
+          showToast("Voice sample uploaded", "success");
+        } catch (e) {
+          showToast("Failed to upload voice sample", "error");
+        }
+      }
+
+      // Progress bar
+      function showProgress(active) {
+        const wrapper = document.getElementById("progressBar");
+        const fill = document.getElementById("progressFill");
+        if (active) {
+          wrapper.classList.add("active");
+          fill.style.width = "0%";
+          // Animate indeterminate
+          let width = 0;
+          const interval = setInterval(() => {
+            width += Math.random() * 15;
+            if (width > 90) width = 90;
+            fill.style.width = width + "%";
+            if (!wrapper.classList.contains("active")) {
+              fill.style.width = "100%";
+              clearInterval(interval);
+              setTimeout(() => {
+                wrapper.classList.remove("active");
+                fill.style.width = "0%";
+              }, 300);
+            }
+          }, 500);
+          wrapper._interval = interval;
+        } else {
+          const fill = document.getElementById("progressFill");
+          fill.style.width = "100%";
+          setTimeout(() => {
+            wrapper.classList.remove("active");
+            fill.style.width = "0%";
+          }, 400);
+          if (wrapper._interval) clearInterval(wrapper._interval);
+        }
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", (e) => {
+        // Space to play/pause (when not in textarea)
+        if (
+          e.code === "Space" &&
+          e.target.tagName !== "TEXTAREA" &&
+          e.target.tagName !== "INPUT"
+        ) {
+          e.preventDefault();
+          togglePlayback();
+        }
+        // Arrow keys to navigate slides
+        if (e.code === "ArrowLeft" && e.target.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          if (selectedSlideIndex > 0) selectSlide(selectedSlideIndex - 1);
+        }
+        if (e.code === "ArrowRight" && e.target.tagName !== "TEXTAREA") {
+          e.preventDefault();
+          if (selectedSlideIndex < slides.length - 1)
+            selectSlide(selectedSlideIndex + 1);
+        }
+        // Cmd/Ctrl+S to save
+        if ((e.metaKey || e.ctrlKey) && e.code === "KeyS") {
+          e.preventDefault();
+          saveScript();
+        }
+      });
+
+      // Resize handler for waveform
+      window.addEventListener("resize", () => {
+        if (currentAudioBuffer) {
+          drawWaveform(currentAudioBuffer);
+        }
+      });
+    </script>
+  </body>
+</html>
