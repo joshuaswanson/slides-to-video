@@ -1,11 +1,14 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/wordmark-on-dark.svg">
-  <img src="assets/wordmark-on-light.svg" alt="slides-to-video" width="480">
-</picture>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/wordmark-on-dark.svg">
+    <img src="assets/wordmark-on-light.svg" alt="slides-to-video" width="480">
+  </picture>
+</p>
+<br>
 
 Turn slide decks into narrated videos with AI voice cloning. Provide a PDF, a markdown script, and a voice sample of about 5 seconds, and get a presentation video.
 
-All processing runs locally on your GPU. Your voice data never leaves your machine.
+All processing runs locally on your GPU.
 
 ## Features
 
