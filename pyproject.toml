@@ -1,17 +1,30 @@
 [project]
 name = "slides-to-video"
-version = "0.1.0"
+version = "0.2.0"
 description = "Generate narrated presentation videos from slides, a script, and a voice sample"
-requires-python = ">=3.10"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
 dependencies = [
+    "fastapi",
     "numpy",
+    "python-multipart",
     "soundfile",
     "torch>=2.6,<2.8",
     "torchaudio>=2.6,<2.8",
+    "uvicorn",
 ]
 
+[project.scripts]
+slides-to-video = "slides_to_video.cli:main"
+slides-to-video-editor = "slides_to_video.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [dependency-groups]
-chatterbox = ["chatterbox-tts"]
+dev = ["httpx", "pytest"]
+chatterbox = ["chatterbox-tts", "ml-dtypes>=0.5"]
 qwen3 = ["qwen-tts"]
 
 [tool.uv]
@@ -21,3 +34,6 @@ conflicts = [
         { group = "qwen3" },
     ],
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

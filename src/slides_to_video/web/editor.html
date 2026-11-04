@@ -194,7 +194,7 @@
       }
 
       .settings-row select,
-      .settings-row input[type="file"] {
+      .settings-row input[type="number"] {
         width: 100%;
         padding: 7px 10px;
         background: var(--bg-tertiary);
@@ -207,7 +207,26 @@
         transition: border-color 0.15s;
       }
 
-      .settings-row select:focus {
+      .settings-row-inline {
+        display: flex;
+        gap: 10px;
+      }
+      .settings-row-inline > div {
+        flex: 1;
+      }
+      .settings-row label.checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .settings-status {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 6px;
+      }
+      .settings-row select:focus,
+      .settings-row input[type="number"]:focus {
         border-color: var(--accent-green);
       }
 
@@ -412,6 +431,11 @@
         color: var(--text-muted);
         font-size: 14px;
         gap: 8px;
+        cursor: pointer;
+      }
+      .no-slides-placeholder:hover {
+        border-color: var(--accent-green);
+        color: var(--text-secondary);
       }
 
       .no-slides-placeholder svg {
@@ -1040,27 +1064,66 @@
             <div class="settings-panel" id="settingsPanel">
               <h3>Configuration</h3>
               <div class="settings-row">
-                <label>TTS Engine</label>
-                <select id="ttsEngine" onchange="loadEngine()">
-                  <option value="qwen3">Qwen3</option>
-                  <option value="cosyvoice">CosyVoice</option>
-                  <option value="f5tts">F5-TTS</option>
-                </select>
+                <label for="ttsEngine">TTS Engine</label>
+                <select
+                  id="ttsEngine"
+                  onchange="updateSettings({ engine: this.value })"
+                ></select>
               </div>
               <div class="settings-row">
-                <label>Language</label>
-                <select id="language">
-                  <option value="en">English</option>
-                  <option value="zh">Chinese</option>
-                  <option value="ja">Japanese</option>
-                  <option value="ko">Korean</option>
-                  <option value="fr">French</option>
-                  <option value="de">German</option>
-                  <option value="es">Spanish</option>
-                  <option value="ar">Arabic</option>
-                  <option value="ru">Russian</option>
-                  <option value="pt">Portuguese</option>
+                <label for="device">Device</label>
+                <select id="device">
+                  <option value="cuda">cuda</option>
+                  <option value="cuda:0">cuda:0</option>
+                  <option value="cuda:1">cuda:1</option>
+                  <option value="mps">mps</option>
+                  <option value="cpu">cpu</option>
                 </select>
+              </div>
+              <button
+                class="btn btn-primary"
+                id="btnLoadEngine"
+                style="width: 100%; justify-content: center; margin-bottom: 14px"
+                onclick="loadEngine()"
+              >
+                Load Engine
+              </button>
+              <div class="settings-row">
+                <label for="language">Language</label>
+                <select id="language" onchange="updateSettings({ language: this.value })"></select>
+              </div>
+              <div class="settings-row settings-row-inline">
+                <div>
+                  <label for="pause">Pause (s)</label>
+                  <input
+                    type="number"
+                    id="pause"
+                    min="0"
+                    step="0.1"
+                    onchange="updateSettings({ pause: parseFloat(this.value) })"
+                  />
+                </div>
+                <div>
+                  <label for="speed">Speed</label>
+                  <input
+                    type="number"
+                    id="speed"
+                    min="0.5"
+                    max="3"
+                    step="0.05"
+                    onchange="updateSettings({ speed: parseFloat(this.value) })"
+                  />
+                </div>
+              </div>
+              <div class="settings-row">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    id="useClick"
+                    onchange="updateSettings({ use_click: this.checked })"
+                  />
+                  Click sound on slide transitions
+                </label>
               </div>
               <div class="settings-row">
                 <label>Voice Sample</label>
@@ -1082,21 +1145,25 @@
                 </div>
               </div>
               <div class="settings-row">
-                <label>Device</label>
-                <select id="device">
-                  <option value="cuda">cuda</option>
-                  <option value="cuda:0">cuda:0</option>
-                  <option value="cuda:1">cuda:1</option>
-                  <option value="cpu">cpu</option>
-                </select>
+                <label>Slides PDF</label>
+                <div class="voice-upload-area">
+                  <input
+                    type="file"
+                    id="slidesFileInput"
+                    accept="application/pdf"
+                    style="display: none"
+                    onchange="uploadSlides()"
+                  />
+                  <button
+                    class="voice-upload-btn"
+                    id="slidesUploadBtn"
+                    onclick="document.getElementById('slidesFileInput').click()"
+                  >
+                    Choose PDF...
+                  </button>
+                </div>
               </div>
-              <button
-                class="btn btn-primary"
-                style="width: 100%; justify-content: center; margin-top: 4px"
-                onclick="loadEngine()"
-              >
-                Load Engine
-              </button>
+              <div class="settings-status" id="settingsStatus"></div>
             </div>
           </div>
         </div>
@@ -1117,7 +1184,11 @@
               <div class="spinner"></div>
             </div>
           </div>
-          <div id="noSlidesPlaceholder" class="no-slides-placeholder">
+          <div
+            id="noSlidesPlaceholder"
+            class="no-slides-placeholder"
+            onclick="document.getElementById('slidesFileInput').click()"
+          >
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -1130,7 +1201,7 @@
               <line x1="8" y1="21" x2="16" y2="21" />
               <line x1="12" y1="17" x2="12" y2="21" />
             </svg>
-            <span>Load slides to begin</span>
+            <span id="placeholderText">Click to load a slides PDF</span>
           </div>
         </div>
 
@@ -1257,8 +1328,8 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-      // State
       let slides = [];
+      let config = null;
       let selectedSlideIndex = 0;
       let audioContext = null;
       let currentAudioBuffer = null;
@@ -1268,68 +1339,179 @@
       let playOffset = 0;
       let animFrameId = null;
       let saveTimeout = null;
-      let videoReady = false;
+      let audioRequestId = 0;
+      let imageVersion = Date.now();
       let isPlayingAll = false;
-      let playAllAbort = false;
+      let playAllToken = 0;
+      let previewAudioSource = null;
 
       const API_BASE = window.location.origin;
+      const $ = (id) => document.getElementById(id);
 
-      // Init
-      document.addEventListener("DOMContentLoaded", () => {
-        fetchSlides();
+      async function api(path, options = {}) {
+        const res = await fetch(`${API_BASE}${path}`, {
+          cache: "no-store",
+          ...options,
+        });
+        if (!res.ok) {
+          let message = `${res.status} ${res.statusText}`;
+          try {
+            const body = await res.json();
+            if (body.error) message = body.error;
+            else if (body.detail) message = JSON.stringify(body.detail);
+          } catch (e) {}
+          throw new Error(message);
+        }
+        return res;
+      }
+
+      function postJSON(path, body) {
+        return api(path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      }
+
+      function getAudioContext() {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === "suspended") audioContext.resume();
+        return audioContext;
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
         document.addEventListener("click", (e) => {
-          const panel = document.getElementById("settingsPanel");
-          const btn = document.getElementById("settingsBtn");
+          const panel = $("settingsPanel");
           if (
             panel.classList.contains("open") &&
             !panel.contains(e.target) &&
-            !btn.contains(e.target)
+            !$("settingsBtn").contains(e.target)
           ) {
             panel.classList.remove("open");
           }
         });
+        try {
+          await loadConfig();
+          await refreshSlides();
+        } catch (e) {
+          showToast(`Could not reach the server: ${e.message}`, "error");
+        }
       });
 
-      // Toast notifications
       function showToast(message, type = "info") {
-        const container = document.getElementById("toastContainer");
         const toast = document.createElement("div");
         toast.className = `toast ${type}`;
         toast.textContent = message;
-        container.appendChild(toast);
+        $("toastContainer").appendChild(toast);
         setTimeout(() => {
           toast.style.animation = "toast-out 0.2s ease forwards";
           setTimeout(() => toast.remove(), 200);
-        }, 3000);
+        }, type === "error" ? 6000 : 3000);
       }
 
-      // Settings panel
       function toggleSettings() {
-        document.getElementById("settingsPanel").classList.toggle("open");
+        $("settingsPanel").classList.toggle("open");
       }
 
-      // Fetch slides
-      async function fetchSlides() {
+      async function loadConfig() {
+        const res = await api("/api/config");
+        applyConfig(await res.json());
+      }
+
+      function applyConfig(cfg) {
+        config = cfg;
+        const engineSelect = $("ttsEngine");
+        engineSelect.innerHTML = "";
+        const placeholder = new Option("Select engine...", "", false, !cfg.engine);
+        placeholder.disabled = true;
+        engineSelect.add(placeholder);
+        for (const name of cfg.engines) {
+          engineSelect.add(new Option(name, name, false, name === cfg.engine));
+        }
+
+        const languageSelect = $("language");
+        languageSelect.innerHTML = "";
+        for (const [code, label] of Object.entries(cfg.languages)) {
+          languageSelect.add(new Option(label, code, false, code === cfg.language));
+        }
+
+        const deviceSelect = $("device");
+        if (![...deviceSelect.options].some((o) => o.value === cfg.device)) {
+          deviceSelect.add(new Option(cfg.device, cfg.device));
+        }
+        deviceSelect.value = cfg.device;
+
+        $("pause").value = cfg.pause;
+        $("speed").value = cfg.speed;
+        $("useClick").checked = cfg.use_click;
+
+        const voiceBtn = $("voiceUploadBtn");
+        voiceBtn.classList.toggle("uploaded", cfg.has_voice);
+        if (cfg.has_voice && voiceBtn.textContent.trim() === "Choose audio file...") {
+          voiceBtn.textContent = "Voice sample loaded";
+        }
+        $("slidesUploadBtn").classList.toggle("uploaded", cfg.has_slides);
+        if (cfg.has_slides && $("slidesUploadBtn").textContent.trim() === "Choose PDF...") {
+          $("slidesUploadBtn").textContent = "Slides loaded";
+        }
+
+        const engineStatus = !cfg.engine
+          ? "No engine selected."
+          : cfg.engine_loaded
+            ? `Engine ${cfg.engine} loaded on ${cfg.device}.`
+            : `Engine ${cfg.engine} selected, not loaded.`;
+        $("settingsStatus").textContent = `${engineStatus} Script: ${cfg.script_path}`;
+      }
+
+      async function updateSettings(patch) {
         try {
-          const res = await fetch(`${API_BASE}/api/slides`);
-          if (!res.ok) throw new Error("Failed to load slides");
-          slides = await res.json();
-          renderTimeline();
-          if (slides.length > 0) {
-            selectSlide(0);
-          }
-          updateTimelineInfo();
+          const res = await postJSON("/api/settings", patch);
+          applyConfig(await res.json());
+          if ("language" in patch || "engine" in patch) await refreshSlides();
         } catch (e) {
-          // Demo mode with placeholder data if API unavailable
-          console.warn("API unavailable, showing empty state");
+          showToast(e.message, "error");
+          await loadConfig();
         }
       }
 
-      // Render timeline
+      async function refreshSlides({ reloadAudio = true } = {}) {
+        const previous = slides[selectedSlideIndex];
+        const res = await api("/api/slides");
+        slides = await res.json();
+        if (slides.length === 0) {
+          renderTimeline();
+          updateTimelineInfo();
+          showEmpty();
+          return;
+        }
+        let index = previous
+          ? slides.findIndex((s) => s.slide_num === previous.slide_num)
+          : 0;
+        if (index < 0) index = 0;
+        selectedSlideIndex = index;
+        renderTimeline();
+        updateTimelineInfo();
+
+        const current = slides[index];
+        const sameSlide = previous && previous.slide_num === current.slide_num;
+        if (reloadAudio || !sameSlide || previous.has_audio !== current.has_audio) {
+          showSlide(index, { keepText: sameSlide });
+        }
+      }
+
+      function showEmpty() {
+        $("slidePreview").style.display = "none";
+        $("noSlidesPlaceholder").style.display = "flex";
+        $("scriptSlideLabel").textContent = "No slides in script";
+        $("scriptTextarea").value = "";
+        clearAudioPanel();
+      }
+
       function renderTimeline() {
-        const track = document.getElementById("timelineTrack");
-        // Keep the playhead element
-        const playhead = document.getElementById("timelinePlayhead");
+        const track = $("timelineTrack");
+        const playhead = $("timelinePlayhead");
         track.innerHTML = "";
         track.appendChild(playhead);
 
@@ -1348,10 +1530,9 @@
           el.onclick = () => selectSlide(i);
 
           const dur = slide.duration ? `${slide.duration.toFixed(1)}s` : "--";
-
           el.innerHTML = `
       <div class="timeline-slide-thumb">
-        <img src="${API_BASE}/api/slide-image/${slide.slide_num}" alt="Slide ${slide.slide_num}" loading="lazy">
+        <img src="${API_BASE}/api/slide-thumb/${slide.slide_num}?v=${imageVersion}" alt="Slide ${slide.slide_num}" loading="lazy">
       </div>
       <div class="timeline-slide-info">
         <span class="timeline-slide-num">${slide.slide_num}</span>
@@ -1367,127 +1548,103 @@
         const total = slides.length;
         const totalDur = slides.reduce((sum, s) => sum + (s.duration || 0), 0);
         const durStr = totalDur > 0 ? ` / ${totalDur.toFixed(1)}s` : "";
-        document.getElementById("timelineTotal").textContent =
+        $("timelineTotal").textContent =
           `${total} slide${total !== 1 ? "s" : ""}${durStr}`;
       }
 
-      // Select slide
-      function selectSlide(index, fromPlayAll = false) {
+      function selectSlide(index, { fromPlayAll = false } = {}) {
         if (index < 0 || index >= slides.length) return;
-
-        // If user clicks a slide during Play All, stop playback
-        if (isPlayingAll && !fromPlayAll) {
-          togglePlayAll();
+        if (isPlayingAll && !fromPlayAll) stopPlayAll();
+        if (index !== selectedSlideIndex) {
+          flushScript().catch(() => {});
         }
+        showSlide(index, { keepText: false });
+      }
 
-        // Save current script before switching
-        if (selectedSlideIndex !== index && slides.length > 0) {
-          saveScriptSilent();
-        }
-
+      function showSlide(index, { keepText }) {
         stopPlayback();
+        playOffset = 0;
         selectedSlideIndex = index;
         const slide = slides[index];
 
-        // Update preview
-        const preview = document.getElementById("slidePreview");
-        const placeholder = document.getElementById("noSlidesPlaceholder");
-        const img = document.getElementById("slideImage");
-        const badge = document.getElementById("slideNumBadge");
+        const hasImages = config ? config.has_slides : true;
+        $("slidePreview").style.display = hasImages ? "block" : "none";
+        $("noSlidesPlaceholder").style.display = hasImages ? "none" : "flex";
+        $("slideImage").src =
+          `${API_BASE}/api/slide-image/${slide.slide_num}?v=${imageVersion}`;
+        $("slideNumBadge").textContent = `Slide ${slide.slide_num}`;
+        $("scriptSlideLabel").textContent = `Slide ${slide.slide_num}`;
+        if (!keepText) $("scriptTextarea").value = slide.text || "";
 
-        preview.style.display = "block";
-        placeholder.style.display = "none";
-        img.src = `${API_BASE}/api/slide-image/${slide.slide_num}`;
-        badge.textContent = `Slide ${slide.slide_num}`;
-
-        // Update script
-        document.getElementById("scriptSlideLabel").textContent =
-          `Slide ${slide.slide_num}`;
-        document.getElementById("scriptTextarea").value = slide.text || "";
-
-        // Update audio
         if (slide.has_audio) {
+          $("audioDuration").textContent = formatDuration(slide.duration || 0);
+          $("waveformPlaceholder").style.display = "none";
+          $("waveformPlayhead").style.left = "0px";
           loadAudio(slide.slide_num);
-          document.getElementById("audioDuration").textContent = slide.duration
-            ? formatDuration(slide.duration)
-            : "--:--";
-          document.getElementById("waveformPlaceholder").style.display = "none";
         } else {
-          currentAudioBuffer = null;
-          document.getElementById("audioDuration").textContent = "--:--";
-          document.getElementById("waveformPlaceholder").style.display = "flex";
-          clearWaveform();
+          clearAudioPanel();
         }
 
-        // Update timeline selection
         const items = document.querySelectorAll(".timeline-slide");
-        items.forEach((el, i) => {
-          el.classList.toggle("selected", i === index);
+        items.forEach((el, i) => el.classList.toggle("selected", i === index));
+        items[index]?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
         });
-
-        // Scroll selected into view
-        const selectedEl = items[index];
-        if (selectedEl) {
-          selectedEl.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest",
-            inline: "center",
-          });
-        }
       }
 
-      // Format duration
+      function clearAudioPanel() {
+        audioRequestId++;
+        currentAudioBuffer = null;
+        $("audioDuration").textContent = "--:--";
+        $("waveformPlaceholder").style.display = "flex";
+        clearWaveform();
+      }
+
       function formatDuration(secs) {
         const m = Math.floor(secs / 60);
         const s = Math.floor(secs % 60);
-        const ms = Math.floor((secs % 1) * 10);
-        return `${m}:${String(s).padStart(2, "0")}.${ms}`;
+        const tenths = Math.floor((secs % 1) * 10);
+        return `${m}:${String(s).padStart(2, "0")}.${tenths}`;
       }
 
-      // Audio loading and playback
       async function loadAudio(slideNum) {
+        const requestId = ++audioRequestId;
         try {
-          if (!audioContext) {
-            audioContext = new (
-              window.AudioContext || window.webkitAudioContext
-            )();
-          }
-          const res = await fetch(`${API_BASE}/api/audio/${slideNum}`);
-          if (!res.ok) return;
-          const arrayBuffer = await res.arrayBuffer();
-          currentAudioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-          drawWaveform(currentAudioBuffer);
-          document.getElementById("waveformPlaceholder").style.display = "none";
+          const ctx = getAudioContext();
+          const res = await api(`/api/audio/${slideNum}`);
+          const buffer = await ctx.decodeAudioData(await res.arrayBuffer());
+          if (requestId !== audioRequestId) return;
+          currentAudioBuffer = buffer;
+          drawWaveform(buffer);
+          $("waveformPlaceholder").style.display = "none";
         } catch (e) {
-          console.error("Failed to load audio:", e);
+          if (requestId === audioRequestId) console.error("Failed to load audio:", e);
         }
       }
 
       function drawWaveform(buffer) {
-        const canvas = document.getElementById("waveformCanvas");
+        const canvas = $("waveformCanvas");
         const ctx = canvas.getContext("2d");
         const container = canvas.parentElement;
         const dpr = window.devicePixelRatio || 1;
-
-        canvas.width = container.clientWidth * dpr;
-        canvas.height = container.clientHeight * dpr;
-        canvas.style.width = container.clientWidth + "px";
-        canvas.style.height = container.clientHeight + "px";
-        ctx.scale(dpr, dpr);
-
         const width = container.clientWidth;
         const height = container.clientHeight;
-        const data = buffer.getChannelData(0);
-        const step = Math.ceil(data.length / width);
-        const centerY = height / 2;
 
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+        ctx.scale(dpr, dpr);
         ctx.clearRect(0, 0, width, height);
 
-        // Draw waveform bars
+        const data = buffer.getChannelData(0);
+        const centerY = height / 2;
         const barWidth = 2;
         const gap = 1;
         const barsCount = Math.floor(width / (barWidth + gap));
-        const samplesPerBar = Math.floor(data.length / barsCount);
+        const samplesPerBar = Math.max(1, Math.floor(data.length / barsCount));
 
         for (let i = 0; i < barsCount; i++) {
           let sum = 0;
@@ -1495,9 +1652,7 @@
           for (let j = 0; j < samplesPerBar; j++) {
             sum += Math.abs(data[start + j] || 0);
           }
-          const avg = sum / samplesPerBar;
-          const barHeight = Math.max(2, avg * height * 0.85);
-
+          const barHeight = Math.max(2, (sum / samplesPerBar) * height * 0.85);
           const x = i * (barWidth + gap);
           const gradient = ctx.createLinearGradient(
             0,
@@ -1508,49 +1663,45 @@
           gradient.addColorStop(0, "rgba(76, 175, 80, 0.7)");
           gradient.addColorStop(0.5, "rgba(76, 175, 80, 0.9)");
           gradient.addColorStop(1, "rgba(76, 175, 80, 0.7)");
-
           ctx.fillStyle = gradient;
           ctx.fillRect(x, centerY - barHeight / 2, barWidth, barHeight);
         }
       }
 
       function clearWaveform() {
-        const canvas = document.getElementById("waveformCanvas");
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        document.getElementById("waveformPlayhead").style.left = "0px";
+        const canvas = $("waveformCanvas");
+        canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+        $("waveformPlayhead").style.left = "0px";
       }
 
       function togglePlayback() {
-        if (isPlaying) {
-          stopPlayback();
-        } else {
-          startPlayback();
-        }
+        if (isPlaying) stopPlayback();
+        else startPlayback();
       }
 
       function startPlayback() {
-        if (!currentAudioBuffer || !audioContext) return;
+        if (!currentAudioBuffer) return;
+        const ctx = getAudioContext();
+        if (playOffset >= currentAudioBuffer.duration) playOffset = 0;
 
-        audioSource = audioContext.createBufferSource();
+        audioSource = ctx.createBufferSource();
         audioSource.buffer = currentAudioBuffer;
-        audioSource.connect(audioContext.destination);
+        audioSource.connect(ctx.destination);
         audioSource.onended = () => {
           if (isPlaying) stopPlayback();
         };
-
-        playStartTime = audioContext.currentTime;
+        playStartTime = ctx.currentTime;
         audioSource.start(0, playOffset);
         isPlaying = true;
 
-        document.getElementById("playIcon").style.display = "none";
-        document.getElementById("pauseIcon").style.display = "block";
-
+        $("playIcon").style.display = "none";
+        $("pauseIcon").style.display = "block";
         updatePlayhead();
       }
 
       function stopPlayback() {
         if (audioSource) {
+          audioSource.onended = null;
           try {
             audioSource.stop();
           } catch (e) {}
@@ -1558,15 +1709,11 @@
         }
         if (isPlaying && audioContext) {
           playOffset += audioContext.currentTime - playStartTime;
-          if (playOffset >= (currentAudioBuffer?.duration || 0)) {
-            playOffset = 0;
-          }
+          if (playOffset >= (currentAudioBuffer?.duration || 0)) playOffset = 0;
         }
         isPlaying = false;
-
-        document.getElementById("playIcon").style.display = "block";
-        document.getElementById("pauseIcon").style.display = "none";
-
+        $("playIcon").style.display = "block";
+        $("pauseIcon").style.display = "none";
         if (animFrameId) {
           cancelAnimationFrame(animFrameId);
           animFrameId = null;
@@ -1575,401 +1722,312 @@
 
       function updatePlayhead() {
         if (!isPlaying || !currentAudioBuffer) return;
-
         const elapsed = playOffset + (audioContext.currentTime - playStartTime);
         const fraction = Math.min(elapsed / currentAudioBuffer.duration, 1);
-
-        const container = document.getElementById("waveformContainer");
-        const playhead = document.getElementById("waveformPlayhead");
-        playhead.style.left = fraction * container.clientWidth + "px";
-
-        document.getElementById("audioDuration").textContent =
-          formatDuration(elapsed);
-
-        if (fraction < 1) {
-          animFrameId = requestAnimationFrame(updatePlayhead);
-        }
-      }
-
-      let previewAudioSource = null;
-      let previewTimestamps = [];
-
-      async function togglePlayAll() {
-        if (isPlayingAll) {
-          playAllAbort = true;
-          if (previewAudioSource) {
-            try {
-              previewAudioSource.stop();
-            } catch (e) {}
-            previewAudioSource = null;
-          }
-          isPlayingAll = false;
-          document.getElementById("playAllIcon").style.display = "";
-          document.getElementById("stopAllIcon").style.display = "none";
-          document.getElementById("playAllLabel").textContent = "Play All";
-          return;
-        }
-
-        isPlayingAll = true;
-        playAllAbort = false;
-        document.getElementById("playAllIcon").style.display = "none";
-        document.getElementById("stopAllIcon").style.display = "";
-        document.getElementById("playAllLabel").textContent = "Building...";
-
-        try {
-          // Build the combined preview audio on the server
-          const formData = new FormData();
-          formData.append("pause", "1.0");
-          formData.append("use_click", "true");
-          const resp = await fetch(`${API_BASE}/api/build-preview-audio`, {
-            method: "POST",
-            body: formData,
-          });
-          const data = await resp.json();
-          if (data.status !== "ok") {
-            showToast(data.error || "Failed to build preview", "error");
-            togglePlayAll();
-            return;
-          }
-
-          previewTimestamps = data.timestamps;
-          document.getElementById("playAllLabel").textContent = "Stop";
-
-          // Fetch and decode the preview audio
-          if (!audioContext) audioContext = new AudioContext();
-          const audioResp = await fetch(`${API_BASE}/api/preview-audio`);
-          const arrayBuf = await audioResp.arrayBuffer();
-          const buffer = await audioContext.decodeAudioData(arrayBuf);
-
-          if (playAllAbort) return;
-
-          // Play it
-          previewAudioSource = audioContext.createBufferSource();
-          previewAudioSource.buffer = buffer;
-          previewAudioSource.connect(audioContext.destination);
-          previewAudioSource.onended = () => {
-            if (isPlayingAll) togglePlayAll();
-          };
-
-          const startTime = audioContext.currentTime;
-          previewAudioSource.start(0);
-
-          // Advance slides based on timestamps
-          const advanceSlides = () => {
-            if (!isPlayingAll || playAllAbort) return;
-            const elapsed = audioContext.currentTime - startTime;
-
-            // Find which slide we should be on
-            let currentSlideIdx = 0;
-            for (let i = previewTimestamps.length - 1; i >= 0; i--) {
-              if (elapsed >= previewTimestamps[i].time) {
-                currentSlideIdx = i;
-                break;
-              }
-            }
-
-            if (currentSlideIdx !== selectedSlideIndex) {
-              selectSlide(currentSlideIdx, true);
-            }
-
-            requestAnimationFrame(advanceSlides);
-          };
-          advanceSlides();
-        } catch (err) {
-          showToast("Playback error: " + err.message, "error");
-          isPlayingAll = false;
-          playAllAbort = false;
-          document.getElementById("playAllIcon").style.display = "";
-          document.getElementById("stopAllIcon").style.display = "none";
-          document.getElementById("playAllLabel").textContent = "Play All";
-        }
+        $("waveformPlayhead").style.left =
+          fraction * $("waveformContainer").clientWidth + "px";
+        $("audioDuration").textContent = formatDuration(elapsed);
+        if (fraction < 1) animFrameId = requestAnimationFrame(updatePlayhead);
       }
 
       function seekAudio(event) {
         if (!currentAudioBuffer) return;
-        const container = document.getElementById("waveformContainer");
+        const container = $("waveformContainer");
         const rect = container.getBoundingClientRect();
         const fraction = (event.clientX - rect.left) / rect.width;
+        const wasPlaying = isPlaying;
+        if (wasPlaying) stopPlayback();
         playOffset = fraction * currentAudioBuffer.duration;
+        $("waveformPlayhead").style.left = fraction * container.clientWidth + "px";
+        if (wasPlaying) startPlayback();
+      }
 
-        const playhead = document.getElementById("waveformPlayhead");
-        playhead.style.left = fraction * container.clientWidth + "px";
+      function setPlayAllUI(mode) {
+        $("playAllIcon").style.display = mode === "idle" ? "" : "none";
+        $("stopAllIcon").style.display = mode === "idle" ? "none" : "";
+        $("playAllLabel").textContent =
+          { idle: "Play All", building: "Building...", playing: "Stop" }[mode];
+      }
 
-        if (isPlaying) {
-          stopPlayback();
-          startPlayback();
+      function stopPlayAll() {
+        playAllToken++;
+        isPlayingAll = false;
+        if (previewAudioSource) {
+          previewAudioSource.onended = null;
+          try {
+            previewAudioSource.stop();
+          } catch (e) {}
+          previewAudioSource = null;
+        }
+        setPlayAllUI("idle");
+      }
+
+      async function togglePlayAll() {
+        if (isPlayingAll) {
+          stopPlayAll();
+          return;
+        }
+        stopPlayback();
+        isPlayingAll = true;
+        const token = ++playAllToken;
+        setPlayAllUI("building");
+
+        try {
+          await flushScript();
+          const data = await (
+            await api("/api/build-preview-audio", { method: "POST" })
+          ).json();
+          const ctx = getAudioContext();
+          const audioRes = await api(data.audio_url);
+          const buffer = await ctx.decodeAudioData(await audioRes.arrayBuffer());
+          if (token !== playAllToken) return;
+
+          const cues = data.timestamps.map((t) => ({
+            time: t.time,
+            index: slides.findIndex((s) => s.slide_num === t.slide_num),
+          }));
+          previewAudioSource = ctx.createBufferSource();
+          previewAudioSource.buffer = buffer;
+          previewAudioSource.connect(ctx.destination);
+          previewAudioSource.onended = () => {
+            if (token === playAllToken) stopPlayAll();
+          };
+          const startTime = ctx.currentTime;
+          previewAudioSource.start(0);
+          setPlayAllUI("playing");
+
+          const advanceSlides = () => {
+            if (token !== playAllToken) return;
+            const elapsed = ctx.currentTime - startTime;
+            const cue = cues.findLast((c) => elapsed >= c.time) || cues[0];
+            if (cue && cue.index >= 0 && cue.index !== selectedSlideIndex) {
+              selectSlide(cue.index, { fromPlayAll: true });
+            }
+            requestAnimationFrame(advanceSlides);
+          };
+          advanceSlides();
+        } catch (err) {
+          if (token === playAllToken) {
+            showToast(err.message, "error");
+            stopPlayAll();
+          }
         }
       }
 
-      // Script save with debounce
-      document
-        .getElementById("scriptTextarea")
-        ?.addEventListener("input", () => {
-          const indicator = document.getElementById("saveIndicator");
-          indicator.textContent = "Unsaved";
-          indicator.className = "save-indicator";
+      $("scriptTextarea").addEventListener("input", () => {
+        const indicator = $("saveIndicator");
+        indicator.textContent = "Unsaved";
+        indicator.className = "save-indicator";
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => flushScript().catch(() => {}), 1500);
+      });
 
-          clearTimeout(saveTimeout);
-          saveTimeout = setTimeout(saveScript, 1500);
-        });
-
-      async function saveScript() {
-        if (slides.length === 0) return;
+      function flushScript() {
+        clearTimeout(saveTimeout);
+        saveTimeout = null;
+        if (slides.length === 0) return Promise.resolve();
         const slide = slides[selectedSlideIndex];
-        const text = document.getElementById("scriptTextarea").value;
+        const text = $("scriptTextarea").value;
+        if (text === slide.text) {
+          $("saveIndicator").textContent = "";
+          return Promise.resolve();
+        }
+        return saveSlideText(slide, text);
+      }
 
-        const indicator = document.getElementById("saveIndicator");
+      async function saveSlideText(slide, text) {
+        const indicator = $("saveIndicator");
         indicator.textContent = "Saving...";
         indicator.className = "save-indicator saving";
-
         try {
-          const res = await fetch(
-            `${API_BASE}/api/update-script/${slide.slide_num}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ text }),
-            },
-          );
-          if (!res.ok) throw new Error("Save failed");
-
-          slide.text = text;
-          indicator.textContent = "Saved";
-          indicator.className = "save-indicator saved";
-          setTimeout(() => {
-            indicator.textContent = "";
-            indicator.className = "save-indicator";
-          }, 2000);
+          await postJSON(`/api/update-script/${slide.slide_num}`, { text });
         } catch (e) {
           indicator.textContent = "Save failed";
           indicator.className = "save-indicator";
-          showToast("Failed to save script", "error");
+          showToast(`Failed to save slide ${slide.slide_num}: ${e.message}`, "error");
+          throw e;
+        }
+        slide.text = text;
+        indicator.textContent = "Saved";
+        indicator.className = "save-indicator saved";
+        setTimeout(() => {
+          if (indicator.textContent === "Saved") {
+            indicator.textContent = "";
+            indicator.className = "save-indicator";
+          }
+        }, 2000);
+        await refreshSlides({ reloadAudio: false });
+      }
+
+      function saveScript() {
+        flushScript().catch(() => {});
+      }
+
+      async function withBusyButton(id, label, task) {
+        const btn = $(id);
+        const original = btn.innerHTML;
+        btn.innerHTML = `<span class="spinner"></span> ${label}`;
+        btn.disabled = true;
+        try {
+          return await task();
+        } finally {
+          btn.innerHTML = original;
+          btn.disabled = false;
         }
       }
 
-      function saveScriptSilent() {
-        if (slides.length === 0) return;
-        const slide = slides[selectedSlideIndex];
-        const text = document.getElementById("scriptTextarea").value;
-        if (text === slide.text) return;
-        slide.text = text;
-
-        fetch(`${API_BASE}/api/update-script/${slide.slide_num}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
-        }).catch(() => {});
-      }
-
-      // Regenerate audio for current slide
       async function regenerateAudio() {
         if (slides.length === 0) return;
         const slide = slides[selectedSlideIndex];
-        const btn = document.getElementById("btnRegenAudio");
-        const origHTML = btn.innerHTML;
-
-        btn.innerHTML = '<span class="spinner"></span> Generating...';
-        btn.disabled = true;
-
         try {
-          const res = await fetch(
-            `${API_BASE}/api/generate/${slide.slide_num}`,
-            { method: "POST" },
-          );
-          if (!res.ok) throw new Error("Generation failed");
-          const data = await res.json();
-
-          slide.has_audio = true;
-          slide.duration = data.duration || 0;
-
-          await loadAudio(slide.slide_num);
-          document.getElementById("audioDuration").textContent = slide.duration
-            ? formatDuration(slide.duration)
-            : "--:--";
-
-          renderTimeline();
-          updateTimelineInfo();
+          await withBusyButton("btnRegenAudio", "Generating...", async () => {
+            await flushScript();
+            await api(`/api/generate/${slide.slide_num}`, { method: "POST" });
+          });
+          await refreshSlides();
           showToast(`Audio generated for slide ${slide.slide_num}`, "success");
         } catch (e) {
-          showToast("Failed to generate audio", "error");
-        } finally {
-          btn.innerHTML = origHTML;
-          btn.disabled = false;
+          showToast(`Failed to generate audio: ${e.message}`, "error");
         }
       }
 
-      // Generate all audio
       async function generateAll() {
-        const btn = document.getElementById("btnGenerateAll");
-        const origHTML = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner"></span> Generating...';
-        btn.disabled = true;
-
         showProgress(true);
-
         try {
-          const res = await fetch(`${API_BASE}/api/generate-all`, {
-            method: "POST",
+          await withBusyButton("btnGenerateAll", "Generating...", async () => {
+            await flushScript();
+            await api("/api/generate-all", { method: "POST" });
           });
-          if (!res.ok) throw new Error("Generation failed");
-
-          await fetchSlides();
-          showToast("All audio generated successfully", "success");
+          await refreshSlides();
+          showToast("All audio generated", "success");
         } catch (e) {
-          showToast("Failed to generate all audio", "error");
+          showToast(`Failed to generate audio: ${e.message}`, "error");
         } finally {
-          btn.innerHTML = origHTML;
-          btn.disabled = false;
           showProgress(false);
         }
       }
 
-      // Build video
       async function buildVideo() {
-        const btn = document.getElementById("btnExport");
-        const origHTML = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner"></span> Building...';
-        btn.disabled = true;
-        btn.classList.remove("pulse");
-
+        $("btnExport").classList.remove("pulse");
         showProgress(true);
-
         try {
-          const res = await fetch(`${API_BASE}/api/build-video`, {
-            method: "POST",
+          const data = await withBusyButton("btnExport", "Building...", async () => {
+            await flushScript();
+            return (await api("/api/build-video", { method: "POST" })).json();
           });
-          if (!res.ok) throw new Error("Build failed");
-          const data = await res.json();
-
-          videoReady = true;
-          btn.classList.add("pulse");
-          showToast("Video exported successfully!", "success");
-
-          if (data.video_url) {
-            window.open(data.video_url, "_blank");
-          }
+          $("btnExport").classList.add("pulse");
+          await refreshSlides();
+          showToast("Video exported", "success");
+          window.open(`${data.video_url}?t=${Date.now()}`, "_blank");
         } catch (e) {
-          showToast("Failed to build video", "error");
+          showToast(`Failed to build video: ${e.message}`, "error");
         } finally {
-          btn.innerHTML = origHTML;
-          btn.disabled = false;
           showProgress(false);
         }
       }
 
-      // Load TTS engine
       async function loadEngine() {
-        const engineName = document.getElementById("ttsEngine").value;
-        const device = document.getElementById("device").value;
-
-        showToast(`Loading ${engineName} engine...`);
-
+        const engine = $("ttsEngine").value;
+        const device = $("device").value;
+        if (!engine) {
+          showToast("Select a TTS engine first", "error");
+          return;
+        }
         try {
-          const res = await fetch(`${API_BASE}/api/load-engine`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ engine: engineName, device }),
-          });
-          if (!res.ok) throw new Error("Failed to load engine");
-          showToast(`Engine "${engineName}" loaded on ${device}`, "success");
+          const res = await withBusyButton("btnLoadEngine", "Loading...", () =>
+            postJSON("/api/load-engine", { engine, device }),
+          );
+          showToast((await res.json()).message, "success");
+          await loadConfig();
+          await refreshSlides();
         } catch (e) {
-          showToast("Failed to load engine", "error");
+          showToast(`Failed to load engine: ${e.message}`, "error");
+          await loadConfig();
         }
       }
 
-      // Upload voice sample
-      async function uploadVoice() {
-        const fileInput = document.getElementById("voiceFileInput");
-        const file = fileInput.files[0];
-        if (!file) return;
-
+      async function uploadFile(inputId, path) {
+        const file = $(inputId).files[0];
+        if (!file) return null;
         const formData = new FormData();
         formData.append("file", file);
+        const res = await api(path, { method: "POST", body: formData });
+        $(inputId).value = "";
+        return { file, data: await res.json() };
+      }
 
-        const btn = document.getElementById("voiceUploadBtn");
-
+      async function uploadVoice() {
         try {
-          const res = await fetch(`${API_BASE}/api/upload-voice`, {
-            method: "POST",
-            body: formData,
-          });
-          if (!res.ok) throw new Error("Upload failed");
-
-          btn.textContent = file.name;
-          btn.classList.add("uploaded");
-          showToast("Voice sample uploaded", "success");
+          const result = await uploadFile("voiceFileInput", "/api/upload-voice");
+          if (!result) return;
+          $("voiceUploadBtn").textContent = result.file.name;
+          showToast(result.data.message, "success");
+          await loadConfig();
+          await refreshSlides();
         } catch (e) {
-          showToast("Failed to upload voice sample", "error");
+          showToast(`Failed to upload voice sample: ${e.message}`, "error");
         }
       }
 
-      // Progress bar
+      async function uploadSlides() {
+        try {
+          showToast("Rendering slides...");
+          const result = await uploadFile("slidesFileInput", "/api/upload-slides");
+          if (!result) return;
+          imageVersion = Date.now();
+          $("slidesUploadBtn").textContent = result.file.name;
+          showToast(result.data.message, "success");
+          await loadConfig();
+          await refreshSlides();
+        } catch (e) {
+          showToast(`Failed to load slides: ${e.message}`, "error");
+        }
+      }
+
       function showProgress(active) {
-        const wrapper = document.getElementById("progressBar");
-        const fill = document.getElementById("progressFill");
+        const wrapper = $("progressBar");
+        const fill = $("progressFill");
+        clearInterval(wrapper._interval);
         if (active) {
           wrapper.classList.add("active");
           fill.style.width = "0%";
-          // Animate indeterminate
           let width = 0;
-          const interval = setInterval(() => {
-            width += Math.random() * 15;
-            if (width > 90) width = 90;
+          wrapper._interval = setInterval(() => {
+            width = Math.min(90, width + Math.random() * 15);
             fill.style.width = width + "%";
-            if (!wrapper.classList.contains("active")) {
-              fill.style.width = "100%";
-              clearInterval(interval);
-              setTimeout(() => {
-                wrapper.classList.remove("active");
-                fill.style.width = "0%";
-              }, 300);
-            }
           }, 500);
-          wrapper._interval = interval;
         } else {
-          const fill = document.getElementById("progressFill");
           fill.style.width = "100%";
           setTimeout(() => {
             wrapper.classList.remove("active");
             fill.style.width = "0%";
           }, 400);
-          if (wrapper._interval) clearInterval(wrapper._interval);
         }
       }
 
-      // Keyboard shortcuts
       document.addEventListener("keydown", (e) => {
-        // Space to play/pause (when not in textarea)
-        if (
-          e.code === "Space" &&
-          e.target.tagName !== "TEXTAREA" &&
-          e.target.tagName !== "INPUT"
-        ) {
+        const typing = ["TEXTAREA", "INPUT", "SELECT"].includes(e.target.tagName);
+        if (e.code === "Space" && !typing) {
           e.preventDefault();
-          togglePlayback();
+          if (isPlayingAll) stopPlayAll();
+          else togglePlayback();
         }
-        // Arrow keys to navigate slides
-        if (e.code === "ArrowLeft" && e.target.tagName !== "TEXTAREA") {
+        if (e.code === "ArrowLeft" && !typing) {
           e.preventDefault();
-          if (selectedSlideIndex > 0) selectSlide(selectedSlideIndex - 1);
+          selectSlide(selectedSlideIndex - 1);
         }
-        if (e.code === "ArrowRight" && e.target.tagName !== "TEXTAREA") {
+        if (e.code === "ArrowRight" && !typing) {
           e.preventDefault();
-          if (selectedSlideIndex < slides.length - 1)
-            selectSlide(selectedSlideIndex + 1);
+          selectSlide(selectedSlideIndex + 1);
         }
-        // Cmd/Ctrl+S to save
         if ((e.metaKey || e.ctrlKey) && e.code === "KeyS") {
           e.preventDefault();
           saveScript();
         }
       });
 
-      // Resize handler for waveform
       window.addEventListener("resize", () => {
-        if (currentAudioBuffer) {
-          drawWaveform(currentAudioBuffer);
-        }
+        if (currentAudioBuffer) drawWaveform(currentAudioBuffer);
       });
     </script>
   </body>

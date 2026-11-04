@@ -1,89 +1,87 @@
 # slides-to-video
 
-Turn slide decks into narrated videos with AI voice cloning. Upload a PDF, write a script, provide a ~5 second voice sample, and get a professional presentation video.
+Turn slide decks into narrated videos with AI voice cloning. Provide a PDF, a markdown script, and a voice sample of about 5 seconds, and get a presentation video.
 
 All processing runs locally on your GPU. Your voice data never leaves your machine.
 
 ## Features
 
-- **Multiple TTS engines**: Qwen3-TTS (recommended), Chatterbox
-- **Voice cloning**: Clone your voice from a short audio sample (~5 seconds)
-- **Multilingual**: Generate narration in 10 languages (en, zh, ja, ko, fr, de, es, ar, ru, pt)
-- **Smart caching**: Only regenerates audio for slides where the script changed
-- **Web editor**: Professional video-editor-style UI for previewing and editing
-- **Click sounds**: Optional slide transition click effects
-- **Ambient noise matching**: Natural-sounding pauses between slides
-- **Per-slide regeneration**: Quickly iterate on individual slides
-- **SRT subtitles**: Export subtitle files alongside your video
-- **Speed control**: Adjust narration speed
-- **Inline pauses**: Use `[pause]` markers in your script for dramatic pauses
-
-## Web Editor
-
-The built-in editor provides a Final Cut Pro-style interface:
-
-- Slide preview with timeline navigation
-- Live script editing with auto-save
-- Per-slide audio generation and playback
-- Full presentation playback with ambient pauses and click sounds
-- One-click video export
-
-```bash
-uv run src/server.py
-# Open http://localhost:8000
-```
-
-## Quick Start (CLI)
-
-```bash
-uv run src/generate.py \
-    --slides presentation.pdf \
-    --script script.md \
-    --voice voice_sample.wav \
-    --tts-engine qwen3 \
-    --click-sound assets/click.wav
-```
+- **Multiple TTS engines**: Qwen3-TTS (10 languages), Chatterbox (English)
+- **Voice cloning** from a short audio sample. Multiple samples are concatenated.
+- **Caching**: audio is regenerated only for slides whose text, voice, engine, or language changed
+- **Web editor** for editing the script, generating audio per slide, previewing the full talk, and exporting
+- **Click sounds** at slide transitions, with the slide changing between key press and release
+- **Ambient pauses** filled with the TTS model's own background noise
+- **SRT subtitles** aligned to the narration
+- **Speed control** and inline `[pause]` markers
 
 ## Requirements
 
-- Python 3.10+
-- NVIDIA GPU with CUDA support
-- `ffmpeg` and `pdftoppm` (from `poppler-utils`) installed and in PATH
+- Python 3.10 to 3.13
+- An NVIDIA GPU with CUDA for practical generation speed
+- `ffmpeg` and `pdftoppm` (from `poppler-utils`) on `PATH`
 
 ## Installation
 
 ```bash
-# Install with Qwen3-TTS (recommended)
-uv sync --group qwen3
-
-# Or with Chatterbox
-uv sync --group chatterbox
+uv sync --group qwen3                       # Qwen3-TTS
+uv sync --group chatterbox --python 3.11    # or Chatterbox
 ```
+
+Chatterbox's dependencies pin old packages without Python 3.12 wheels, so its environment needs Python 3.10 or 3.11.
+
+## Quick Start (CLI)
+
+```bash
+uv run slides-to-video \
+    --slides presentation.pdf \
+    --script script.md \
+    --voice voice_sample.wav \
+    --tts-engine qwen3 \
+    --click-sound
+```
+
+## Web Editor
+
+```bash
+uv run slides-to-video-editor --script script.md --slides presentation.pdf --voice voice_sample.wav --tts-engine qwen3
+```
+
+Open http://localhost:8000. Without `--tts-engine`, select an engine in Settings before generating. Cached clips only count as current for the engine that made them. Slides, the voice sample, the engine, language, pause, speed, and click sound can also be set from the Settings panel.
+
+The editor has no authentication and binds to `127.0.0.1` by default. On a remote GPU machine, reach it through an SSH tunnel:
+
+```bash
+ssh -L 8000:localhost:8000 gpu-host
+```
+
+Editor options: `--script` (default `script.md`), `--slides`, `--voice`, `--cache-dir`, `--tts-engine`, `--device`, `--language`, `--click-sound`, `--height`, `--host`, `--port`.
 
 ## CLI Options
 
-| Flag                 | Default      | Description                                                        |
-| -------------------- | ------------ | ------------------------------------------------------------------ |
-| `--slides`           | (required)   | Path to slides PDF                                                 |
-| `--script`           | (required)   | Path to narration script (markdown)                                |
-| `--voice`            | (required)   | Path to voice sample(s). Multiple files merged for better cloning. |
-| `--output`           | `output.mp4` | Output video path                                                  |
-| `--tts-engine`       | `chatterbox` | TTS engine (`chatterbox`, `qwen3`)                                 |
-| `--language`         | `en`         | Language code (en, zh, ja, ko, fr, de, es, ar, ru, pt)             |
-| `--pause`            | `1.0`        | Seconds of pause between slides                                    |
-| `--speed`            | (none)       | Playback speed multiplier (e.g. 1.2 for 20% faster)                |
-| `--click-sound`      | (none)       | Path to click sound effect for slide transitions                   |
-| `--only-slides`      | (none)       | Process specific slides only (e.g. `3-7` or `1,3,5`)               |
-| `--preview`          | off          | Generate audio only, skip video assembly                           |
-| `--srt`              | (none)       | Export SRT subtitles to the given path                             |
-| `--regenerate`       | off          | Force regeneration of all audio clips                              |
-| `--regenerate-slide` | (none)       | Regenerate specific slides (e.g. `--regenerate-slide 3 7`)         |
-| `--device`           | `cuda`       | PyTorch device                                                     |
-| `--cache-dir`        | `.cache`     | Directory for cached audio clips and slide images                  |
+| Flag                 | Default      | Description                                                              |
+| -------------------- | ------------ | ------------------------------------------------------------------------ |
+| `--slides`           | (required)   | Path to slides PDF                                                       |
+| `--script`           | (required)   | Path to narration script (markdown)                                      |
+| `--voice`            | (required)   | Path to voice sample(s). Multiple files are concatenated.                |
+| `--output`           | `output.mp4` | Output video path                                                        |
+| `--tts-engine`       | (required)   | TTS engine (`qwen3`, `chatterbox`)                                       |
+| `--language`         | `en`         | Language code (en, zh, ja, ko, fr, de, es, ar, ru, pt). Chatterbox: en.  |
+| `--pause`            | `1.0`        | Seconds of ambient pause before and after each slide's narration         |
+| `--speed`            | (none)       | Narration speed multiplier (e.g. 1.2 for 20% faster), at least 0.5       |
+| `--click-sound`      | (none)       | Click at slide transitions. Without a path, uses the bundled click.      |
+| `--height`           | `1080`       | Video height in pixels                                                   |
+| `--only-slides`      | (none)       | Process specific slides only (e.g. `3-7` or `1,3,5`)                     |
+| `--preview`          | off          | Generate audio only, skip video assembly                                 |
+| `--srt`              | (none)       | Export SRT subtitles to the given path                                   |
+| `--regenerate`       | off          | Force regeneration of all audio clips                                    |
+| `--regenerate-slide` | (none)       | Regenerate specific slides (e.g. `--regenerate-slide 3 7`)               |
+| `--device`           | `cuda`       | PyTorch device                                                           |
+| `--cache-dir`        | `.cache`     | Directory for cached audio clips and slide images                        |
 
 ## Script Format
 
-The script is a markdown file with slides separated by `---`:
+Slides are separated by lines containing only `---`. Each slide starts with a `## Slide N` heading, where `N` is the PDF page number:
 
 ```markdown
 ## Slide 1 - Title
@@ -94,29 +92,50 @@ This is the narration for the first slide.
 
 ## Slide 2 - Introduction
 
-This is the narration for the second slide. You can write
-multiple lines and they will be joined together.
+Paragraphs and line breaks are kept in the file and joined for narration.
 
-Use [pause] for a 0.5 second pause, or [pause 1.5] for custom duration.
+Use [pause] for a 0.5 second pause, or [pause 1.5] for a custom duration.
 ```
+
+A slide with a heading and no narration is shown for the two pauses only.
+
+## Timing
+
+Each slide occupies `[pause][narration][pause]`. The click sound is placed so the slide image changes between the key press and the release. The editor's Play All preview, the exported video, and the SRT file all use the same narration track.
 
 ## Caching
 
-Audio clips and slide images are cached in `.cache/` by default. The system hashes each slide's script text, so if you change only one slide, only that slide's audio gets regenerated. Use `--regenerate` to force fresh generation of all audio, or `--regenerate-slide 3 7` to redo specific slides.
+Everything is cached in `.cache/` by default:
+
+- `audio_clips/` holds one WAV per slide. A clip is reused while the slide's narration, the voice sample, the engine, and the language are unchanged.
+- `slide_images/` holds the rendered pages and thumbnails. They are re-rendered when the PDF contents or `--height` change.
+- `voice.wav` is the prepared voice sample. The editor reuses it across restarts.
+
+Use `--regenerate` to redo all audio, or `--regenerate-slide 3 7` to redo specific slides.
+
+## Development
+
+```bash
+uv run pytest
+```
+
+The tests use a fake TTS engine and need `ffmpeg` and `pdftoppm`, but no GPU or model download.
 
 ## Project Structure
 
 ```
-src/
-  generate.py       # Core generation pipeline
-  tts_engines.py    # TTS engine abstraction (Qwen3, Chatterbox)
-  server.py         # FastAPI backend for the web editor
-web/
-  editor.html       # Video editor frontend
-assets/
-  click.wav         # Slide transition click sound
+src/slides_to_video/
+  cli.py            # slides-to-video command
+  server.py         # slides-to-video-editor command (FastAPI)
+  script.py         # script parsing and editing
+  audio.py          # voice preparation, TTS clips, narration track
+  video.py          # slide rendering, video encoding, subtitles
+  tts_engines.py    # Qwen3 and Chatterbox engines
+  web/editor.html   # editor frontend
+  assets/click.wav  # bundled transition click
 examples/
-  example_script.md # Example narration script
+  example_script.md
+tests/
 ```
 
 ## Support
