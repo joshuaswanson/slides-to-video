@@ -1,4 +1,7 @@
-# slides-to-video
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/wordmark-on-dark.svg">
+  <img src="assets/wordmark-on-light.svg" alt="slides-to-video" width="480">
+</picture>
 
 Turn slide decks into narrated videos with AI voice cloning. Provide a PDF, a markdown script, and a voice sample of about 5 seconds, and get a presentation video.
 
