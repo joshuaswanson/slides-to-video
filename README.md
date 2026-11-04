@@ -116,8 +116,11 @@ Everything is cached in `.cache/` by default:
 - `audio_clips/` holds one WAV per slide. A clip is reused while the slide's narration, the voice sample, the engine, and the language are unchanged.
 - `slide_images/` holds the rendered pages and thumbnails. They are re-rendered when the PDF contents or `--height` change.
 - `voice.wav` is the prepared voice sample. The editor reuses it across restarts.
+- `video.mp4` is the editor's exported video, and `slides.pdf` is a PDF uploaded in the editor.
 
 Use `--regenerate` to redo all audio, or `--regenerate-slide 3 7` to redo specific slides.
+
+Clips cached by version 0.1 recorded only the slide text. The first run with a voice sample adopts them for that run's engine, language, and voice, and prints a warning for each slide. Run it with the engine and voice that made those clips, or use `--regenerate`.
 
 ## Development
 
@@ -137,8 +140,10 @@ src/slides_to_video/
   audio.py          # voice preparation, TTS clips, narration track
   video.py          # slide rendering, video encoding, subtitles
   tts_engines.py    # Qwen3 and Chatterbox engines
+  tools.py          # ffmpeg/pdftoppm runner and hashing helpers
   web/editor.html   # editor frontend
   assets/click.wav  # bundled transition click
+assets/             # README images
 examples/
   example_script.md
 tests/
