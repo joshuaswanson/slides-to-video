@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/wordmark-on-dark.svg">
-    <img src="assets/wordmark-on-light.svg" alt="Slides to Video" width="480">
+    <img src="assets/wordmark-on-light.svg" alt="Slides to Video" width="425">
   </picture>
 </p>
 <br>
