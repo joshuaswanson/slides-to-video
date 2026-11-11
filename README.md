@@ -59,7 +59,7 @@ Speed on an M1 Max, after the model has loaded:
 
 Qwen3-TTS and Chatterbox can also run on any machine you can reach over SSH. In Settings, set **Runs On** to **Remote server**, enter the host (`user@host` or an alias from `~/.ssh/config`), and click **Load Engine**. The server needs [uv](https://docs.astral.sh/uv/) and a CUDA GPU. The app uses your SSH keys and config, so jump hosts work as they do in Terminal.
 
-The app runs one `ssh` process that starts the worker with `uvx`, installed from the release tag matching the app version. **CUDA devices** limits which GPUs the worker sees, and **Remote command** replaces the default command, for example to run a checkout on the server. A dropped connection stays down until you click **Load Engine** again. The app never reconnects on its own.
+The app runs one `ssh` process that starts the worker from the release matching the app version, as described under TTS Worker. **CUDA devices** limits which GPUs the worker sees, and **Remote command** replaces the default command, for example to run a checkout on the server. A dropped connection stays down until you click **Load Engine** again. The app never reconnects on its own.
 
 ## Cloud APIs
 
@@ -102,13 +102,9 @@ Audio is cached per slide in `.cache/audio_clips/`. A clip is reused while the s
 
 ## TTS Worker
 
-The app generates speech through `slides-to-video-worker`, a small Python process in this repository that it talks to over stdin and stdout. Run from a checkout, the app uses the checkout's code. A standalone build installs the worker from the release tag matching its version:
+The app generates speech through `slides-to-video-worker`, a small Python process in this repository that it talks to over stdin and stdout. Run from a checkout, the app uses the checkout's code. A standalone build downloads the source archive of the release tag matching its version, then runs the worker with `uv run --frozen`, so it gets exactly the dependency versions in that release's `uv.lock`. Remote servers run the same steps over SSH and cache them in `~/.cache/slides-to-video`.
 
-```bash
-uvx --python 3.12 --from "slides-to-video[qwen3] @ git+https://github.com/joshuaswanson/slides-to-video@v0.4.0" slides-to-video-worker
-```
-
-Chatterbox needs Python 3.11 (`--python 3.11` and the `[chatterbox]` extra), because its dependencies pin packages without Python 3.12 wheels.
+Chatterbox runs on Python 3.11, because its dependencies pin packages without Python 3.12 wheels.
 
 ## Development
 
