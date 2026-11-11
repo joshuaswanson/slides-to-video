@@ -24,7 +24,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["httpx", "pytest"]
-chatterbox = ["chatterbox-tts", "ml-dtypes>=0.5"]
+chatterbox = ["chatterbox-tts", "ml-dtypes>=0.5", "setuptools<81"]
 qwen3 = ["qwen-tts"]
 
 [tool.uv]

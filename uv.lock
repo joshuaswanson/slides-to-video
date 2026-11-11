@@ -3646,8 +3646,42 @@ wheels = [
 
 [[package]]
 name = "setuptools"
+version = "80.10.2"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.13' and sys_platform == 'win32'",
+    "python_full_version >= '3.13' and sys_platform == 'emscripten'",
+    "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'emscripten'",
+    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*' and sys_platform == 'win32'",
+    "python_full_version == '3.11.*' and sys_platform == 'emscripten'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.11'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/76/95/faf61eb8363f26aa7e1d762267a8d602a1b26d4f3a1e758e92cb3cb8b054/setuptools-80.10.2.tar.gz", hash = "sha256:8b0e9d10c784bf7d262c4e5ec5d4ec94127ce206e8738f29a437945fbc219b70", size = 1200343, upload-time = "2026-01-25T22:38:17.252Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/94/b8/f1f62a5e3c0ad2ff1d189590bfa4c46b4f3b6e49cef6f26c6ee4e575394d/setuptools-80.10.2-py3-none-any.whl", hash = "sha256:95b30ddfb717250edb492926c92b5221f7ef3fbcc2b07579bcd4a27da21d0173", size = 1064234, upload-time = "2026-01-25T22:38:15.216Z" },
+]
+
+[[package]]
+name = "setuptools"
 version = "84.2.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.13' and sys_platform == 'win32' and extra != 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra != 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.12' and extra != 'group-15-slides-to-video-chatterbox' and extra != 'group-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and extra != 'group-15-slides-to-video-chatterbox' and extra != 'group-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'group-15-slides-to-video-chatterbox' and extra != 'group-15-slides-to-video-qwen3'",
+]
 sdist = { url = "https://files.pythonhosted.org/packages/70/b3/c19426f783614d625699a4b247faf628ea9ab1db228674491767b417f9e1/setuptools-84.2.1.tar.gz", hash = "sha256:3ff8b3b5492a0aa66960f4419365a86b84e013070d4313e4d4a6894f5d64d6bc", size = 1230289, upload-time = "2026-10-20T19:01:37.742Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ef/55/6dc6d6bb953bdfc52519a0059592c52b6e3b8ad51cf8256dffceb55b0610/setuptools-84.2.1-py3-none-any.whl", hash = "sha256:ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2", size = 876263, upload-time = "2026-10-20T19:01:35.678Z" },
@@ -3697,6 +3731,7 @@ chatterbox = [
     { name = "chatterbox-tts" },
     { name = "ml-dtypes", version = "0.5.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
     { name = "ml-dtypes", version = "0.6.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.13' and extra == 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
+    { name = "setuptools", version = "80.10.2", source = { registry = "https://pypi.org/simple" } },
 ]
 dev = [
     { name = "httpx" },
@@ -3721,6 +3756,7 @@ requires-dist = [
 chatterbox = [
     { name = "chatterbox-tts" },
     { name = "ml-dtypes", specifier = ">=0.5" },
+    { name = "setuptools", specifier = "<81" },
 ]
 dev = [
     { name = "httpx" },
@@ -4190,7 +4226,7 @@ dependencies = [
     { name = "nvidia-nccl-cu12", version = "2.21.5", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'group-15-slides-to-video-chatterbox') or (platform_machine != 'x86_64' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform != 'linux' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
     { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'group-15-slides-to-video-chatterbox') or (platform_machine != 'x86_64' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform != 'linux' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
     { name = "nvidia-nvtx-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'group-15-slides-to-video-chatterbox') or (platform_machine != 'x86_64' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform != 'linux' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
-    { name = "setuptools", marker = "(python_full_version >= '3.12' and extra == 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
+    { name = "setuptools", version = "80.10.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.12' and extra == 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
     { name = "sympy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-15-slides-to-video-chatterbox'" },
     { name = "triton", version = "3.2.0", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'group-15-slides-to-video-chatterbox') or (platform_machine != 'x86_64' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform != 'linux' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
     { name = "typing-extensions", marker = "extra == 'group-15-slides-to-video-chatterbox'" },
@@ -4255,7 +4291,7 @@ dependencies = [
     { name = "nvidia-nccl-cu12", version = "2.26.2", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
     { name = "nvidia-nvjitlink-cu12", version = "12.6.85", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
     { name = "nvidia-nvtx-cu12", version = "12.6.77", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
-    { name = "setuptools", marker = "(python_full_version >= '3.12' and extra != 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
+    { name = "setuptools", version = "84.2.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.12' and extra != 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
     { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-15-slides-to-video-qwen3' or extra != 'group-15-slides-to-video-chatterbox'" },
     { name = "triton", version = "3.3.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'group-15-slides-to-video-chatterbox') or (extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3')" },
     { name = "typing-extensions", marker = "extra == 'group-15-slides-to-video-qwen3' or extra != 'group-15-slides-to-video-chatterbox'" },
@@ -4479,7 +4515,7 @@ resolution-markers = [
     "python_full_version < '3.11' and extra != 'group-15-slides-to-video-chatterbox' and extra != 'group-15-slides-to-video-qwen3'",
 ]
 dependencies = [
-    { name = "setuptools", marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra != 'group-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra != 'group-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'group-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform == 'emscripten' and extra != 'group-15-slides-to-video-chatterbox' and extra != 'group-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra != 'group-15-slides-to-video-chatterbox' and extra != 'group-15-slides-to-video-qwen3')" },
+    { name = "setuptools", version = "84.2.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra != 'group-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra != 'group-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'group-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform == 'emscripten' and extra != 'group-15-slides-to-video-chatterbox' and extra != 'group-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'group-15-slides-to-video-chatterbox' and extra == 'group-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra != 'group-15-slides-to-video-chatterbox' and extra != 'group-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8d/a9/549e51e9b1b2c9b854fd761a1d23df0ba2fbc60bd0c13b489ffa518cfcb7/triton-3.3.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b74db445b1c562844d3cfad6e9679c72e93fdfb1a90a24052b03bb5c49d1242e", size = 155600257, upload-time = "2025-05-29T23:39:36.085Z" },
