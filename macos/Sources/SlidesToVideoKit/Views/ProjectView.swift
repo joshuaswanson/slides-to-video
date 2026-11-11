@@ -43,6 +43,9 @@ struct ProjectView: View {
         }
         .background(Theme.bgPrimary)
         .overlay(alignment: .bottom) { ToastOverlay(toasts: toasts) }
+        .sheet(item: Binding(get: { speech.prompt }, set: { if $0 == nil { speech.answerPrompt(nil) } })) { prompt in
+            SSHPromptSheet(prompt: prompt, host: AppSettings.shared.remoteHost.destination) { speech.answerPrompt($0) }
+        }
         .onAppear {
             talk.onSlideChange = { index in
                 if project.slides.indices.contains(index) { selection = project.slides[index].num }

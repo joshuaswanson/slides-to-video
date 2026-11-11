@@ -65,7 +65,7 @@ Speed on an M1 Max, after the model has loaded:
 
 ## Remote GPU
 
-Qwen3-TTS and Chatterbox can also run on any machine you can reach over SSH. In Settings, set **Runs On** to **Remote server**, enter the host (`user@host` or an alias from `~/.ssh/config`), and click **Load Engine**. The server needs [uv](https://docs.astral.sh/uv/) and a CUDA GPU. The app uses your SSH keys and config, so jump hosts work as they do in Terminal. It cannot answer password or two-factor prompts. If your server asks for one, enable connection sharing for that host in `~/.ssh/config`, connect once in Terminal, and the app reuses that connection:
+Qwen3-TTS and Chatterbox can also run on any machine you can reach over SSH. In Settings, set **Runs On** to **Remote server**, enter the host (`user@host` or an alias from `~/.ssh/config`), and click **Load Engine**. The server needs [uv](https://docs.astral.sh/uv/) and a CUDA GPU. The app uses your SSH keys and config, so jump hosts work as they do in Terminal. When the server or a jump host asks for a password, key passphrase, or verification code, the app shows the question and passes your answer to ssh without saving it. To avoid typing it on every connection, enable connection sharing for that host in `~/.ssh/config`:
 
 ```
 Host gpu-server

@@ -18,6 +18,21 @@ public final class SpeechController {
     public private(set) var isGeneratingAll = false
     public private(set) var lastError: String?
     public private(set) var latestLog = ""
+    /// A question from ssh, such as a password or verification code, waiting for the user.
+    public private(set) var prompt: SSHPrompt?
+
+    public struct SSHPrompt: Identifiable {
+        public let id = UUID()
+        public let text: String
+        let reply: @Sendable (String?) -> Void
+
+        public var isSecret: Bool {
+            let lower = text.lowercased()
+            return ["password", "passphrase", "pin"].contains { lower.contains($0) }
+        }
+    }
+
+    private var askpass: AskpassServer?
 
     private var backend: SpeechBackend?
     private var cancelAll = false
@@ -49,8 +64,23 @@ public final class SpeechController {
                 state = .failed("Enter the SSH host of your GPU server in Settings")
                 return
             }
+            let server: AskpassServer
+            do {
+                server = try AskpassServer { [weak self] text, reply in
+                    Task { @MainActor in
+                        guard let self else { return reply(nil) }
+                        self.prompt = SSHPrompt(text: text, reply: reply)
+                    }
+                }
+            } catch {
+                state = .failed(error.localizedDescription)
+                return
+            }
+            askpass = server
+            let helper = Bundle.main.executableURL ?? URL(filePath: CommandLine.arguments[0])
             await startWorker(
-                WorkerLaunch.remote(engine: engine, host: host), engine: engine, device: device,
+                WorkerLaunch.remote(engine: engine, host: host, promptEnvironment: server.environment(askpass: helper)),
+                engine: engine, device: device,
                 startingMessage: "Connecting to \(host.destination). The first start installs the engine on the server and can take several minutes."
             )
             return
@@ -93,7 +123,20 @@ public final class SpeechController {
         }
     }
 
+    func testSetPrompt(_ text: String, _ reply: @escaping @Sendable (String?) -> Void) {
+        prompt = SSHPrompt(text: text, reply: reply)
+    }
+
+    /// Answers the pending ssh prompt. Nil cancels it, which makes ssh give up on that question.
+    public func answerPrompt(_ answer: String?) {
+        prompt?.reply(answer)
+        prompt = nil
+    }
+
     public func stop() {
+        answerPrompt(nil)
+        askpass?.stop()
+        askpass = nil
         backend?.stop()
         backend = nil
         generating.removeAll()
@@ -168,6 +211,9 @@ public final class SpeechController {
     private func workerExited(_ exited: WorkerBackend?, _ error: WorkerError) {
         guard let exited, exited === backend else { return }
         backend = nil
+        answerPrompt(nil)
+        askpass?.stop()
+        askpass = nil
         state = .failed(error.localizedDescription)
     }
 }

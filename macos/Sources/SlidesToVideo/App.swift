@@ -7,6 +7,7 @@ struct SlidesToVideoApp: App {
     @State private var model = AppModel()
 
     init() {
+        Askpass.runHelperIfRequested()
         NSApplication.shared.setActivationPolicy(.regular)
     }
 

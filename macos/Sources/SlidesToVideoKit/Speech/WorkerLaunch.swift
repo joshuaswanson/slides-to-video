@@ -94,20 +94,23 @@ public struct WorkerLaunch: Equatable {
         return WorkerLaunch(executable: URL(filePath: "/bin/sh"), arguments: ["-c", script], environment: environment)
     }
 
-    /// One ssh process that runs the worker on a remote host. BatchMode stops ssh from asking
-    /// for a password it cannot get. Keep-alives make a dropped link end the process, and
-    /// nothing restarts it.
-    public static func remote(engine: EngineInfo, host: RemoteHost, ssh: URL = URL(filePath: "/usr/bin/ssh")) -> WorkerLaunch {
+    /// One ssh process that runs the worker on a remote host. Prompts for passwords and codes go
+    /// through `promptEnvironment` (see Askpass). Keep-alives make a dropped link end the process,
+    /// and nothing restarts it.
+    public static func remote(
+        engine: EngineInfo, host: RemoteHost, ssh: URL = URL(filePath: "/usr/bin/ssh"),
+        promptEnvironment: [String: String] = [:]
+    ) -> WorkerLaunch {
         var arguments = [
             "-T",
-            "-o", "BatchMode=yes",
-            "-o", "ConnectTimeout=15",
+            "-o", "ConnectTimeout=30",
             "-o", "ServerAliveInterval=30",
             "-o", "ServerAliveCountMax=3",
         ]
         if let port = host.port, !port.isEmpty { arguments += ["-p", port] }
         arguments += [host.destination, remoteCommand(engine: engine, host: host)]
-        return WorkerLaunch(executable: ssh, arguments: arguments, environment: ProcessInfo.processInfo.environment)
+        let environment = ProcessInfo.processInfo.environment.merging(promptEnvironment) { $1 }
+        return WorkerLaunch(executable: ssh, arguments: arguments, environment: environment)
     }
 
     public static func remoteCommand(engine: EngineInfo, host: RemoteHost) -> String {
