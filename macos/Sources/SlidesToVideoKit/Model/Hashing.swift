@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 
-/// Mirrors `slides_to_video.tools` so cache keys written by the CLI stay valid in the app.
+/// Truncated SHA-256 hashes for cache keys. The format must stay fixed so existing caches stay valid.
 public enum Hashing {
     public static func textHash(_ parts: String...) -> String {
         textHash(parts)
@@ -15,7 +15,7 @@ public enum Hashing {
         hex(SHA256.hash(data: try Data(contentsOf: url, options: .mappedIfSafe)))
     }
 
-    /// The manifest format written before version 0.2, which hashed only the text.
+    /// Older manifests hash only the narration text. Clips with such entries are adopted.
     public static func legacyTextHash(_ text: String) -> String {
         hex(SHA256.hash(data: Data(text.utf8)))
     }

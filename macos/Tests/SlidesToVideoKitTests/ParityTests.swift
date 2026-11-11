@@ -39,7 +39,7 @@ struct ParityTests {
         return try! JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
     }()
 
-    @Test func parseMatchesPython() throws {
+    @Test func parseMatchesFixture() throws {
         for script in fixture.scripts {
             let slides = try Script.parse(script.content)
             #expect(slides.map(\.num) == script.slides.map(\.num))
@@ -48,13 +48,13 @@ struct ParityTests {
         }
     }
 
-    @Test func updateMatchesPython() {
+    @Test func updateMatchesFixture() {
         for update in fixture.updates {
             let content = fixture.scripts[update.script].content
             let result = Result { try Script.updateSlideText(content, slide: update.slide, text: update.text) }
             switch result {
             case .success(let text):
-                #expect(update.error == nil, "Python raised \(update.error ?? "") for slide \(update.slide)")
+                #expect(update.error == nil, "Expected error \(update.error ?? "") for slide \(update.slide)")
                 #expect(text == update.result)
             case .failure(let error):
                 #expect(update.result == nil, "Swift threw \(error) for slide \(update.slide)")
@@ -70,7 +70,7 @@ struct ParityTests {
         }
     }
 
-    @Test func pausesMatchPython() {
+    @Test func pausesMatchFixture() {
         for pause in fixture.pauses {
             let items = Script.splitPauses(pause.text).map { item -> Fixture.Item in
                 switch item {
@@ -83,7 +83,7 @@ struct ParityTests {
         }
     }
 
-    @Test func textHashMatchesPython() {
+    @Test func textHashMatchesFixture() {
         for hash in fixture.hashes {
             #expect(Hashing.textHash(hash.parts) == hash.hash)
         }

@@ -1,7 +1,7 @@
 import AVFoundation
 import Foundation
 
-/// Mirrors `slides_to_video.audio.NarrationTrack`: one audio track for the whole talk.
+/// One audio track for the whole talk.
 /// Each slide occupies [pause][narration][pause], and the click straddles each slide boundary.
 public struct NarrationTrack: Sendable {
     public static let clickSplit = 0.085
@@ -100,7 +100,7 @@ extension Project {
     }
 }
 
-/// Changes tempo without changing pitch, like ffmpeg's atempo filter in the CLI.
+/// Changes tempo without changing pitch.
 public enum TimeStretch {
     public static func apply(_ samples: [Float], sampleRate: Int, rate: Double) throws -> [Float] {
         guard !samples.isEmpty, rate != 1 else { return samples }

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Mirrors `slides_to_video.script` so the app and the CLI read and write the same files.
+/// A slide in `script.md`: its PDF page number and narration.
 public struct Slide: Equatable, Identifiable, Sendable {
     public let num: Int
     public var text: String

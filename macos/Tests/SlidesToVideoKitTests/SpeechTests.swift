@@ -16,7 +16,7 @@ struct ClipCacheTests {
         return try JSONDecoder().decode(Wrapper.self, from: data).clip_cache
     }
 
-    @Test func keysMatchPython() throws {
+    @Test func keysMatchFixture() throws {
         let want = try expected()
         let voice = fixtures.appending(path: "voice.wav")
         #expect(try Hashing.fileHash(voice) == want.voice_hash)

@@ -1,7 +1,7 @@
 import CoreText
 import SwiftUI
 
-/// The editor's design tokens from `web/editor.html`.
+/// Design tokens for the dark theme: colors, corner radii, and fonts.
 enum Theme {
     static let bgPrimary = Color(hex: 0x1A1A1E)
     static let bgSecondary = Color(hex: 0x222226)

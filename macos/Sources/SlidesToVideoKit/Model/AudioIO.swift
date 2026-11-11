@@ -71,7 +71,7 @@ public enum AudioIO {
         return Array(UnsafeBufferPointer(start: output.floatChannelData![0], count: Int(output.frameLength)))
     }
 
-    /// Writes 16-bit mono PCM WAV, the format the Python package writes.
+    /// Writes 16-bit mono PCM WAV.
     public static func writeWAV(_ samples: [Float], sampleRate: Int, to url: URL) throws {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         let settings: [String: Any] = [

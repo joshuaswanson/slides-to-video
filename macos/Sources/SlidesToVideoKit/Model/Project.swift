@@ -130,7 +130,7 @@ public final class Project {
 
     /// Returns `.cache/voice.wav`, converting the chosen voice sample when it changed.
     ///
-    /// A `voice.wav` written by the CLI has no source record. It is kept so its clips stay valid.
+    /// A `voice.wav` without a source record is kept as is, so clips made with it stay valid.
     public func preparedVoice() throws -> URL? {
         guard let source = voiceURL else {
             return FileManager.default.fileExists(atPath: preparedVoiceURL.path) ? preparedVoiceURL : nil

@@ -15,7 +15,7 @@ struct TrackTests {
         return try! JSONDecoder().decode(Wrapper.self, from: Data(contentsOf: url)).tracks
     }()
 
-    @Test func layoutMatchesPython() {
+    @Test func layoutMatchesFixture() {
         for c in cases {
             let track = NarrationTrack.build(
                 clips: c.clips, sampleRate: c.sample_rate, pause: c.pause,
