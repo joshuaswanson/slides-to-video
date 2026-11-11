@@ -49,8 +49,8 @@ final class WorkerBackend: SpeechBackend {
     }
 }
 
-/// A hosted API. The voice sample is cloned once per provider, sample, and language, and the
-/// resulting voice ID is remembered in the app's defaults.
+/// A hosted API. The app keeps one clone per provider: the voice sample is cloned once, and
+/// when the sample changes the new clone replaces the old one, which is deleted from the account.
 @MainActor
 final class CloudBackend: SpeechBackend {
     let engine: EngineInfo
@@ -102,10 +102,15 @@ final class CloudBackend: SpeechBackend {
     }
 
     func clonedVoice(_ provider: CloudProvider, voice: URL, language: String, key: String) async throws -> String {
-        let storeKey = "clonedVoice.\(provider.id).\(try Hashing.fileHash(voice)).\(language)"
-        if let existing = store.string(forKey: storeKey) { return existing }
+        let storeKey = "clonedVoice.\(provider.id)"
+        let sampleHash = try Hashing.fileHash(voice)
+        let saved = store.dictionary(forKey: storeKey) as? [String: String]
+        if saved?["sample"] == sampleHash, let id = saved?["id"] { return id }
         let id = try await provider.cloneVoice(sample: try Data(contentsOf: voice), name: "Slides to Video voice", language: language, key: key)
-        store.set(id, forKey: storeKey)
+        store.set(["sample": sampleHash, "id": id], forKey: storeKey)
+        if let previous = saved?["id"], previous != id {
+            try? await provider.deleteVoice(previous, key: key)
+        }
         return id
     }
 

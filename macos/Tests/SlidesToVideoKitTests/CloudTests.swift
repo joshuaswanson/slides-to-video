@@ -147,9 +147,33 @@ struct CloudTests {
         let clip = try await backend.synthesize("One. [pause 0.5] Two.", language: "en", voice: voice)
         #expect(clip.samples.count == 2400 + 12000 + 2400)
         _ = try await backend.synthesize("Three.", language: "en", voice: voice)
+        _ = try await backend.synthesize("Vier.", language: "de", voice: voice)
         let clones = MockAPI.recorded.filter { $0.request.url!.path.hasSuffix("/voices/add") }
         #expect(clones.count == 1)
         #expect(try await backend.ambient(language: "en", voice: voice) == nil)
+    }
+
+    @MainActor
+    @Test func newSampleReplacesAndDeletesOldClone() async throws {
+        var nextID = 0
+        let session = MockAPI.session { request, _ in
+            if request.httpMethod == "DELETE" { return (200, json(["status": "ok"])) }
+            if request.url!.path.hasSuffix("/voices/add") {
+                nextID += 1
+                return (200, json(["voice_id": "v\(nextID)"]))
+            }
+            return (200, pcm16([0, 0]))
+        }
+        let defaults = UserDefaults(suiteName: "s2v-test-\(UUID().uuidString)")!
+        let backend = CloudBackend(engine: EngineInfo.named("elevenlabs")!, key: "k", session: session, store: defaults)
+        let first = Bundle.module.url(forResource: "voice", withExtension: "wav", subdirectory: "Fixtures")!
+        let second = FileManager.default.temporaryDirectory.appending(path: "s2v-voice-\(UUID().uuidString).wav")
+        try AudioIO.writeWAV([Float](repeating: 0.3, count: 4800), sampleRate: 24000, to: second)
+        _ = try await backend.synthesize("A.", language: "en", voice: first)
+        _ = try await backend.synthesize("B.", language: "en", voice: second)
+        let deletes = MockAPI.recorded.filter { $0.request.httpMethod == "DELETE" }
+        #expect(deletes.map { $0.request.url!.path } == ["/v1/voices/v1"])
+        #expect((defaults.dictionary(forKey: "clonedVoice.elevenlabs") as? [String: String])?["id"] == "v2")
     }
 
     @MainActor

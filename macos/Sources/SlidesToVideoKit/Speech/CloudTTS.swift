@@ -25,6 +25,7 @@ public protocol CloudProvider: Sendable {
     var languages: Set<String> { get }
     func cloneVoice(sample: Data, name: String, language: String, key: String) async throws -> String
     func synthesize(text: String, voiceID: String, language: String, key: String) async throws -> PCMClip
+    func deleteVoice(_ voiceID: String, key: String) async throws
 }
 
 struct HTTP {
@@ -118,6 +119,13 @@ public struct ElevenLabs: CloudProvider {
         let data = try await http.send(request, provider: title)
         return PCMClip(pcm16: data, sampleRate: 24000)
     }
+
+    public func deleteVoice(_ voiceID: String, key: String) async throws {
+        var request = URLRequest(url: base.appending(path: "v1/voices/\(voiceID)"))
+        request.httpMethod = "DELETE"
+        request.setValue(key, forHTTPHeaderField: "xi-api-key")
+        _ = try await http.send(request, provider: title)
+    }
 }
 
 public struct Cartesia: CloudProvider {
@@ -169,6 +177,12 @@ public struct Cartesia: CloudProvider {
         ] as [String: Any])
         let data = try await http.send(request, provider: title)
         return PCMClip(pcm16: data, sampleRate: 24000)
+    }
+
+    public func deleteVoice(_ voiceID: String, key: String) async throws {
+        var request = request("voices/\(voiceID)", key: key)
+        request.httpMethod = "DELETE"
+        _ = try await http.send(request, provider: title)
     }
 }
 
