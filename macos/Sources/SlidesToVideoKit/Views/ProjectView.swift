@@ -103,7 +103,7 @@ struct TopBar: View {
     var body: some View {
         ZStack {
             HStack(spacing: 12) {
-                Color.clear.frame(width: 64, height: 1)
+                Color.clear.frame(width: 62, height: 1)
                 Wordmark(size: 16)
                 Rectangle().fill(Theme.borderSubtle).frame(width: 1, height: 20)
                 Text(project.name)

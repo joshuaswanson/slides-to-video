@@ -18,6 +18,7 @@ public struct RootView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .background(TrafficLightPositioner())
         .alert(
             "Could not open project",
             isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })
