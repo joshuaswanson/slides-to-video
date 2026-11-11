@@ -59,7 +59,14 @@ Speed on an M1 Max, after the model has loaded:
 
 ## Remote GPU
 
-Qwen3-TTS and Chatterbox can also run on any machine you can reach over SSH. In Settings, set **Runs On** to **Remote server**, enter the host (`user@host` or an alias from `~/.ssh/config`), and click **Load Engine**. The server needs [uv](https://docs.astral.sh/uv/) and a CUDA GPU. The app uses your SSH keys and config, so jump hosts work as they do in Terminal.
+Qwen3-TTS and Chatterbox can also run on any machine you can reach over SSH. In Settings, set **Runs On** to **Remote server**, enter the host (`user@host` or an alias from `~/.ssh/config`), and click **Load Engine**. The server needs [uv](https://docs.astral.sh/uv/) and a CUDA GPU. The app uses your SSH keys and config, so jump hosts work as they do in Terminal. It cannot answer password or two-factor prompts. If your server asks for one, enable connection sharing for that host in `~/.ssh/config`, connect once in Terminal, and the app reuses that connection:
+
+```
+Host gpu-server
+    ControlMaster auto
+    ControlPath ~/.ssh/cm-%r@%h:%p
+    ControlPersist 4h
+```
 
 The app runs one `ssh` process that starts the worker from the release matching the app version, as described under TTS Worker. **CUDA devices** limits which GPUs the worker sees, and **Remote command** replaces the default command, for example to run a checkout on the server. A dropped connection stays down until you click **Load Engine** again. The app never reconnects on its own.
 

@@ -288,7 +288,7 @@ struct RemoteHostFields: View {
             }
             field("CUDA devices", text: $host.cudaDevices, prompt: "All, or e.g. 0,1")
             field("Remote command", text: $host.command, prompt: "Default: uvx from the release")
-            Text("Uses your ssh keys and ~/.ssh/config. The server needs uv and a GPU. A dropped connection stays down until you connect again.")
+            Text("Uses your ssh keys and ~/.ssh/config, and cannot answer password prompts. The server needs uv and a GPU. A dropped connection stays down until you connect again.")
                 .font(Theme.ui(11))
                 .foregroundStyle(Theme.textMuted)
                 .fixedSize(horizontal: false, vertical: true)
