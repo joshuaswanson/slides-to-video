@@ -157,6 +157,7 @@ struct TopBar: View {
                     toasts.show("Load a TTS engine in Settings first", .error)
                     return
                 }
+                guard confirmCloudCost() else { return }
                 Task {
                     await speech.generateStale(in: project)
                     if speech.lastError == nil { toasts.show("All audio generated", .success) }
@@ -167,6 +168,20 @@ struct TopBar: View {
             .buttonStyle(.editor(.generateAll))
             .disabled(speech.isBusy)
         }
+    }
+
+    /// Asks before sending a batch to a paid API, showing how much text it is.
+    private func confirmCloudCost() -> Bool {
+        guard let engine = EngineInfo.named(project.settings.engine), engine.isCloud else { return true }
+        let slides = speech.staleSlides(in: project).filter { !$0.narration.isEmpty }
+        guard !slides.isEmpty else { return true }
+        let characters = slides.map { Script.stripPauses($0.narration).count }.reduce(0, +)
+        let alert = NSAlert()
+        alert.messageText = "Send \(characters.formatted()) characters to \(engine.title)?"
+        alert.informativeText = "This generates audio for \(slides.count) slide\(slides.count == 1 ? "" : "s"). The provider bills your API key per character."
+        alert.addButton(withTitle: "Generate")
+        alert.addButton(withTitle: "Cancel")
+        return alert.runModal() == .alertFirstButtonReturn
     }
 
     private var playAllButton: some View {

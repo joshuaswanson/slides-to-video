@@ -1,21 +1,5 @@
 import Foundation
 
-public struct EngineInfo: Identifiable, Hashable, Sendable {
-    public let id: String
-    public let title: String
-    public let languages: Set<String>
-    public let pythonVersion: String
-
-    public static let all = [
-        EngineInfo(id: "qwen3", title: "Qwen3-TTS", languages: ["en", "zh", "ja", "ko", "fr", "de", "es", "ar", "ru", "pt"], pythonVersion: "3.12"),
-        EngineInfo(id: "chatterbox", title: "Chatterbox", languages: ["en"], pythonVersion: "3.11"),
-    ]
-
-    public static func named(_ id: String?) -> EngineInfo? {
-        all.first { $0.id == id }
-    }
-}
-
 public enum LaunchError: LocalizedError {
     case uvNotFound
 

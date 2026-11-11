@@ -10,8 +10,9 @@ A Mac app that turns a slide deck into a narrated video. Open a PDF, write the n
 
 ## Features
 
-- **Voice cloning** with Qwen3-TTS (10 languages) or Chatterbox (English), from a short voice sample
-- **Runs on your Mac** on the Apple Silicon GPU
+- **Voice cloning** from a short voice sample, with Qwen3-TTS (10 languages) or Chatterbox (English) running on your Mac
+- **Cloud voices** through ElevenLabs, Cartesia, or any HTTP endpoint you configure
+- **Video export** to MP4 at up to 4K, with optional SRT subtitles
 - **Per-slide editing**: change one slide's text and regenerate only that slide
 - **Play All** previews the whole talk with pauses and click sounds between slides
 - **Ambient pauses** filled with the voice model's own background noise
@@ -38,6 +39,12 @@ Speed on an M1 Max, after the model has loaded:
 | ---------- | ------------------------- |
 | Chatterbox | about 4 s                 |
 | Qwen3-TTS  | about 9 s                 |
+
+## Cloud APIs
+
+Pick ElevenLabs, Cartesia, or Custom HTTP endpoint as the TTS engine, paste your API key in Settings, and click **Connect**. Keys are stored in the macOS Keychain. The app clones your voice sample once per provider and remembers the voice ID. Before **Generate All Audio** sends anything to a paid API, it shows how many characters it will send and asks you to confirm.
+
+The custom endpoint posts a JSON body you write, with `{{text}}`, `{{language}}`, and `{{voice_id}}` placeholders, and accepts an audio file, raw 16-bit PCM, or JSON with a base64 audio field in response.
 
 ## Projects
 

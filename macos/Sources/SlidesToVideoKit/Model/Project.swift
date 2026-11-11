@@ -151,9 +151,9 @@ public final class Project {
 
     /// The clip cache for the project's engine, language, and voice, or nil without an engine.
     public func clipCache() -> ClipCache? {
-        guard let engine = settings.engine else { return nil }
+        guard let engine = EngineInfo.named(settings.engine) else { return nil }
         let voice = FileManager.default.fileExists(atPath: preparedVoiceURL.path) ? preparedVoiceURL : nil
-        return ClipCache(directory: audioURL, engineName: engine, language: settings.language, voiceURL: voice)
+        return ClipCache(directory: audioURL, engineName: engine.cacheName, language: settings.language, voiceURL: voice)
     }
 
     public func audioDidChange() {
