@@ -104,10 +104,7 @@ struct TopBar: View {
         ZStack {
             HStack(spacing: 12) {
                 Color.clear.frame(width: 64, height: 1)
-                Text("Slides to Video")
-                    .font(Theme.ui(15, .semibold))
-                    .tracking(-0.15)
-                    .foregroundStyle(Theme.textPrimary)
+                Wordmark(size: 16)
                 Rectangle().fill(Theme.borderSubtle).frame(width: 1, height: 20)
                 Text(project.name)
                     .font(Theme.ui(12))

@@ -36,16 +36,8 @@ struct WelcomeView: View {
         ZStack {
             Theme.bgPrimary
             VStack(spacing: 28) {
-                if let logo = Resources.image("AppIcon") {
-                    Image(nsImage: logo)
-                        .resizable()
-                        .frame(width: 112, height: 112)
-                        .shadow(color: .black.opacity(0.35), radius: 12, y: 6)
-                }
-                VStack(spacing: 8) {
-                    (Text("Slides ") + Text("to").italic().foregroundColor(Theme.green) + Text(" Video"))
-                        .font(Theme.ui(34, .semibold))
-                        .foregroundStyle(Theme.textPrimary)
+                VStack(spacing: 10) {
+                    Wordmark(size: 44)
                     Text("Turn a slide deck and a script into a narrated video.")
                         .font(Theme.ui(14))
                         .foregroundStyle(Theme.textSecondary)

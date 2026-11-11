@@ -41,7 +41,7 @@ enum Theme {
 
     /// Registers the bundled JetBrains Mono so `mono` resolves on Macs without it installed.
     static func registerFonts() {
-        for name in ["JetBrainsMono-Regular", "JetBrainsMono-Medium", "JetBrainsMono-SemiBold"] {
+        for name in ["JetBrainsMono-Regular", "JetBrainsMono-Medium", "JetBrainsMono-SemiBold", "IBMPlexSans-SemiBold", "IBMPlexSans-SemiBoldItalic"] {
             guard let url = Bundle.module.url(forResource: name, withExtension: "ttf", subdirectory: "Resources/Fonts") else { continue }
             CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
         }
@@ -55,6 +55,17 @@ extension Color {
             green: Double((hex >> 8) & 0xFF) / 255,
             blue: Double(hex & 0xFF) / 255
         )
+    }
+}
+
+/// "Slides to Video" set like the README wordmark: IBM Plex Sans SemiBold, "to" in green italic.
+struct Wordmark: View {
+    var size: CGFloat = 15
+
+    var body: some View {
+        (Text("Slides ") + Text("to").font(.custom("IBMPlexSans-SemiBoldItalic", size: size)).foregroundColor(Theme.green) + Text(" Video"))
+            .font(.custom("IBMPlexSans-SemiBold", size: size))
+            .foregroundStyle(Theme.textPrimary)
     }
 }
 
