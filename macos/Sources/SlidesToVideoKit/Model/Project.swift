@@ -27,6 +27,8 @@ public final class Project {
     public private(set) var slides: [Slide] = []
     public private(set) var pdf: PDFDocument?
     public private(set) var scriptError: String?
+    /// Bumped whenever clips change on disk, so views re-read cache freshness.
+    public private(set) var audioRevision = 0
 
     public var scriptURL: URL { folder.appending(path: Self.scriptName) }
     public var cacheURL: URL { folder.appending(path: ".cache") }
@@ -101,6 +103,45 @@ public final class Project {
 
     public func setVoice(_ url: URL) throws {
         settings.voiceFile = try importFile(url)
+        try FileManager.default.createDirectory(at: cacheURL, withIntermediateDirectories: true)
+        try? FileManager.default.removeItem(at: voiceSourceRecordURL)
+        try? FileManager.default.removeItem(at: preparedVoiceURL)
+        _ = try preparedVoice()
+    }
+
+    public var preparedVoiceURL: URL { cacheURL.appending(path: "voice.wav") }
+    var voiceSourceRecordURL: URL { cacheURL.appending(path: "voice.source") }
+
+    /// Returns `.cache/voice.wav`, converting the chosen voice sample when it changed.
+    ///
+    /// A `voice.wav` written by the CLI has no source record. It is kept so its clips stay valid.
+    public func preparedVoice() throws -> URL? {
+        guard let source = voiceURL else {
+            return FileManager.default.fileExists(atPath: preparedVoiceURL.path) ? preparedVoiceURL : nil
+        }
+        let sourceHash = try Hashing.fileHash(source)
+        let recorded = try? String(contentsOf: voiceSourceRecordURL, encoding: .utf8)
+        let exists = FileManager.default.fileExists(atPath: preparedVoiceURL.path)
+        if exists, recorded == sourceHash { return preparedVoiceURL }
+        if exists, recorded == nil {
+            try sourceHash.write(to: voiceSourceRecordURL, atomically: true, encoding: .utf8)
+            return preparedVoiceURL
+        }
+        try AudioIO.prepareVoice(from: source, to: preparedVoiceURL)
+        try sourceHash.write(to: voiceSourceRecordURL, atomically: true, encoding: .utf8)
+        audioDidChange()
+        return preparedVoiceURL
+    }
+
+    /// The clip cache for the project's engine, language, and voice, or nil without an engine.
+    public func clipCache() -> ClipCache? {
+        guard let engine = settings.engine else { return nil }
+        let voice = FileManager.default.fileExists(atPath: preparedVoiceURL.path) ? preparedVoiceURL : nil
+        return ClipCache(directory: audioURL, engineName: engine, language: settings.language, voiceURL: voice)
+    }
+
+    public func audioDidChange() {
+        audioRevision += 1
     }
 
     public func page(for slide: Slide) -> PDFPage? {

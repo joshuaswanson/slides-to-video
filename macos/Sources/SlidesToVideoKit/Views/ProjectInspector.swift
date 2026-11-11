@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 
 struct ProjectInspector: View {
     @Bindable var project: Project
+    let speech: SpeechController
     @State private var importError: String?
 
     private static let languages: [(String, String)] = [
@@ -20,6 +21,7 @@ struct ProjectInspector: View {
                         .buttonStyle(.link)
                 }
             }
+            EngineSection(project: project, speech: speech)
             Section("Narration") {
                 Picker("Language", selection: $project.settings.language) {
                     ForEach(Self.languages, id: \.0) { Text($0.1).tag($0.0) }

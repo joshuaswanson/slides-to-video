@@ -9,11 +9,14 @@ struct TimelineStrip: View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 10) {
+                    let _ = project.audioRevision
+                    let cache = project.clipCache()
                     ForEach(project.slides) { slide in
                         TimelineItem(
                             page: project.page(for: slide),
                             slide: slide,
-                            isSelected: slide.num == selection
+                            isSelected: slide.num == selection,
+                            hasAudio: cache?.isFresh(slide) ?? false
                         )
                         .id(slide.num)
                         .onTapGesture { selection = slide.num }
@@ -34,6 +37,7 @@ struct TimelineItem: View {
     let page: PDFPage?
     let slide: Slide
     let isSelected: Bool
+    let hasAudio: Bool
 
     var body: some View {
         VStack(spacing: 4) {
@@ -56,6 +60,11 @@ struct TimelineItem: View {
                 Spacer()
                 if slide.narration.isEmpty {
                     Text("no narration").font(.caption2).foregroundStyle(.tertiary)
+                } else {
+                    Circle()
+                        .fill(hasAudio ? Color.green : Color.secondary.opacity(0.3))
+                        .frame(width: 7, height: 7)
+                        .help(hasAudio ? "Audio is up to date" : "Needs audio")
                 }
             }
             .frame(width: 136)

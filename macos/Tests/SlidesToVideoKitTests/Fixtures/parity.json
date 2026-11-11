@@ -187,5 +187,14 @@
       ],
       "hash": "48ecaede4a920300"
     }
-  ]
+  ],
+  "clip_cache": {
+    "engine": "qwen3",
+    "language": "de",
+    "voice_hash": "3a0e7f69442a3422",
+    "settings_key": "959260c1506a144c",
+    "slide_text": "Hallo  Welt.\n\nZweiter Absatz.",
+    "slide_key": "7079f8c082167e5c",
+    "ambient_name": "ambient_959260c1506a144c.wav"
+  }
 }

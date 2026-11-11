@@ -3,6 +3,8 @@ import SwiftUI
 struct ScriptEditor: View {
     let project: Project
     let slide: Slide
+    let speech: SpeechController
+    let player: ClipPlayer
     @State private var draft: String
     @State private var status: SaveStatus = .saved
     @State private var pendingSave: Task<Void, Never>?
@@ -11,9 +13,11 @@ struct ScriptEditor: View {
         case saved, unsaved, failed(String)
     }
 
-    init(project: Project, slide: Slide) {
+    init(project: Project, slide: Slide, speech: SpeechController, player: ClipPlayer) {
         self.project = project
         self.slide = slide
+        self.speech = speech
+        self.player = player
         _draft = State(initialValue: slide.text)
     }
 
@@ -34,6 +38,14 @@ struct ScriptEditor: View {
             Text("Use [pause] or [pause 1.5] for silence. A blank line starts a new paragraph.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            AudioRow(project: project, slide: slide, speech: speech, player: player)
+            if let error = speech.lastError {
+                Label(error, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .lineLimit(4)
+                    .textSelection(.enabled)
+            }
         }
         .padding(16)
         .onChange(of: draft) { _, _ in scheduleSave() }
@@ -41,6 +53,9 @@ struct ScriptEditor: View {
             if status == .saved { draft = newValue }
         }
         .onDisappear { save() }
+        .onChange(of: speech.isBusy) { _, busy in
+            if busy { save() }
+        }
     }
 
     @ViewBuilder

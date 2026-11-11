@@ -7,7 +7,9 @@ import json
 from pathlib import Path
 
 from slides_to_video.script import ScriptError, parse_script, split_pauses, strip_pauses, update_slide_text
-from slides_to_video.tools import text_hash
+from slides_to_video.audio import ClipCache
+from slides_to_video.script import Slide
+from slides_to_video.tools import file_hash, text_hash
 
 FIXTURES = Path(__file__).parent.parent / "Tests" / "SlidesToVideoKitTests" / "Fixtures"
 
@@ -42,11 +44,25 @@ def updated(content, num, text):
         return {"error": str(e)}
 
 
+VOICE = FIXTURES / "voice.wav"
+if not VOICE.exists():
+    import numpy as np
+    import soundfile as sf
+    t = np.arange(2400) / 24000
+    sf.write(str(VOICE), (0.2 * np.sin(2 * np.pi * 180 * t)).astype(np.float32), 24000)
+cache = ClipCache(Path("/nonexistent"), "qwen3", "de", VOICE)
+slide = Slide(3, "Hallo  Welt.\n\nZweiter Absatz.")
+
 fixture = {
     "scripts": [{"content": c, "slides": parsed(c)} for c in SCRIPTS],
     "updates": [{"script": i, "slide": n, "text": t, **updated(SCRIPTS[i], n, t)} for i, n, t in UPDATES],
     "pauses": [{"text": t, "items": split_pauses(t), "stripped": strip_pauses(t)} for t in PAUSES],
     "hashes": [{"parts": p, "hash": text_hash(*p)} for p in HASHES],
+    "clip_cache": {
+        "engine": "qwen3", "language": "de", "voice_hash": file_hash(VOICE),
+        "settings_key": cache.settings_key, "slide_text": slide.text, "slide_key": cache._key(slide),
+        "ambient_name": cache.ambient_path.name,
+    },
 }
 (FIXTURES / "parity.json").write_text(json.dumps(fixture, indent=2, ensure_ascii=False))
 print(f"wrote {FIXTURES / 'parity.json'}")

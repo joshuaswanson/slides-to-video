@@ -5,6 +5,8 @@ struct ProjectView: View {
     @Bindable var project: Project
     @State private var selection: Int?
     @State private var showInspector = true
+    @State private var speech = SpeechController()
+    @State private var player = ClipPlayer()
 
     private var selectedSlide: Slide? {
         project.slides.first { $0.num == selection } ?? project.slides.first
@@ -22,7 +24,7 @@ struct ProjectView: View {
                 SlidePreview(page: selectedSlide.flatMap(project.page(for:)), number: selectedSlide?.num)
                     .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
                 if let slide = selectedSlide {
-                    ScriptEditor(project: project, slide: slide)
+                    ScriptEditor(project: project, slide: slide, speech: speech, player: player)
                         .id(slide.num)
                         .frame(minWidth: 300, idealWidth: 380, maxWidth: 520)
                 }
@@ -36,10 +38,13 @@ struct ProjectView: View {
         }
         .navigationTitle(project.name)
         .inspector(isPresented: $showInspector) {
-            ProjectInspector(project: project)
+            ProjectInspector(project: project, speech: speech)
                 .inspectorColumnWidth(min: 240, ideal: 280, max: 360)
         }
         .toolbar {
+            ToolbarItem {
+                GenerateAllButton(project: project, speech: speech)
+            }
             ToolbarItem {
                 Button {
                     showInspector.toggle()
@@ -53,6 +58,10 @@ struct ProjectView: View {
         }
         .focusable()
         .focusEffectDisabled()
+        .onDisappear {
+            speech.stop()
+            player.stop()
+        }
         .onKeyPress(.leftArrow) { move(-1) }
         .onKeyPress(.rightArrow) { move(1) }
     }
