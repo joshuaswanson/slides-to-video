@@ -13,9 +13,12 @@ struct SlidesToVideoApp: App {
     var body: some Scene {
         Window("Slides to Video", id: "main") {
             RootView(model: model)
-                .frame(minWidth: 960, minHeight: 620)
+                .frame(minWidth: 1040, minHeight: 640)
+                .ignoresSafeArea()
                 .onAppear { NSApplication.shared.activate() }
         }
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1400, height: 880)
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button("New from PDF…") { model.choosePDF() }

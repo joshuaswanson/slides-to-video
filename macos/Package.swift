@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "SlidesToVideo",
-    platforms: [.macOS(.v14)],
+    platforms: [.macOS(.v15)],
     targets: [
         .target(name: "SlidesToVideoKit", resources: [.copy("Resources")]),
         .executableTarget(name: "SlidesToVideo", dependencies: ["SlidesToVideoKit"]),

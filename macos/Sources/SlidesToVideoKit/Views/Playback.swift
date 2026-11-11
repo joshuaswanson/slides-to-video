@@ -77,44 +77,56 @@ final class TalkPlayer: NSObject, AVAudioPlayerDelegate {
     }
 }
 
-/// Peak envelope of an audio file, cached per file and modification date.
+/// Mean absolute level per bucket, normalized to the loudest bucket, cached per file version.
 enum Waveform {
     @MainActor private static var cache: [String: [Float]] = [:]
 
     @MainActor
-    static func peaks(_ url: URL, buckets: Int = 240) -> [Float] {
+    static func levels(_ url: URL, buckets: Int = 600) -> [Float] {
         let modified = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
         let key = "\(url.path)|\(modified?.timeIntervalSince1970 ?? 0)|\(buckets)"
         if let hit = cache[key] { return hit }
         guard let samples = try? AudioIO.readMono(url, sampleRate: 8000), !samples.isEmpty else { return [] }
         let size = max(1, samples.count / buckets)
-        let peaks = stride(from: 0, to: samples.count, by: size).map { start in
-            samples[start..<min(start + size, samples.count)].reduce(0) { max($0, abs($1)) }
+        let levels = stride(from: 0, to: samples.count, by: size).map { start in
+            let chunk = samples[start..<min(start + size, samples.count)]
+            return chunk.reduce(0) { $0 + abs($1) } / Float(chunk.count)
         }
-        let top = max(peaks.max() ?? 1, 0.01)
-        let normalized = peaks.map { $0 / top }
+        let top = max(levels.max() ?? 1, 0.001)
+        let normalized = levels.map { $0 / top }
         cache[key] = normalized
         return normalized
     }
 }
 
+/// Bars like the editor's canvas: 2 px wide, 1 px apart, centered, green gradient.
 struct WaveformView: View {
-    let peaks: [Float]
+    let levels: [Float]
     let progress: Double?
 
     var body: some View {
         Canvas { context, size in
-            guard !peaks.isEmpty else { return }
-            let step = size.width / CGFloat(peaks.count)
-            for (i, peak) in peaks.enumerated() {
-                let height = max(1.5, CGFloat(peak) * size.height)
-                let rect = CGRect(x: CGFloat(i) * step, y: (size.height - height) / 2, width: max(1, step * 0.7), height: height)
-                let played = progress.map { CGFloat(i) / CGFloat(peaks.count) <= $0 } ?? false
-                context.fill(Path(roundedRect: rect, cornerRadius: 0.75), with: .color(played ? .green : .green.opacity(0.55)))
+            guard !levels.isEmpty else { return }
+            let barWidth: CGFloat = 2, gap: CGFloat = 1
+            let count = max(1, Int(size.width / (barWidth + gap)))
+            let gradient = Gradient(stops: [
+                .init(color: Theme.green.opacity(0.7), location: 0),
+                .init(color: Theme.green.opacity(0.9), location: 0.5),
+                .init(color: Theme.green.opacity(0.7), location: 1),
+            ])
+            for i in 0..<count {
+                let lo = i * levels.count / count
+                let hi = max(lo + 1, (i + 1) * levels.count / count)
+                let level = levels[lo..<min(hi, levels.count)].reduce(0, +) / Float(hi - lo)
+                let height = max(2, CGFloat(level) * size.height * 0.85)
+                let rect = CGRect(x: CGFloat(i) * (barWidth + gap), y: (size.height - height) / 2, width: barWidth, height: height)
+                context.fill(Path(rect), with: .linearGradient(gradient, startPoint: CGPoint(x: 0, y: rect.minY), endPoint: CGPoint(x: 0, y: rect.maxY)))
             }
             if let progress {
                 let x = size.width * progress
-                context.fill(Path(CGRect(x: x - 0.75, y: 0, width: 1.5, height: size.height)), with: .color(.primary))
+                var glow = context
+                glow.addFilter(.shadow(color: Theme.green.opacity(0.5), radius: 3))
+                glow.fill(Path(CGRect(x: x - 1, y: 0, width: 2, height: size.height)), with: .color(Theme.green))
             }
         }
     }

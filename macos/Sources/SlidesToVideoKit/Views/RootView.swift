@@ -5,17 +5,19 @@ public struct RootView: View {
 
     public init(model: AppModel) {
         self.model = model
+        Theme.registerFonts()
     }
 
     public var body: some View {
         Group {
             if let project = model.project {
-                ProjectView(project: project)
+                ProjectView(project: project, model: model)
                     .id(project.folder)
             } else {
                 WelcomeView(model: model)
             }
         }
+        .preferredColorScheme(.dark)
         .alert(
             "Could not open project",
             isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })
@@ -31,29 +33,39 @@ struct WelcomeView: View {
     let model: AppModel
 
     var body: some View {
-        VStack(spacing: 24) {
-            if let logo = Resources.image("AppIcon") {
-                Image(nsImage: logo)
-                    .resizable()
-                    .frame(width: 128, height: 128)
-            }
-            VStack(spacing: 6) {
-                Text("Slides \(Text("to").italic().foregroundStyle(.green)) Video")
-                    .font(.system(size: 34, weight: .semibold))
-                Text("Turn a slide deck and a script into a narrated video.")
-                    .foregroundStyle(.secondary)
-            }
-            HStack(spacing: 12) {
-                Button("New from PDF…") { model.choosePDF() }
-                    .keyboardShortcut("n")
-                    .controlSize(.large)
-                    .buttonStyle(.borderedProminent)
-                Button("Open Project Folder…") { model.chooseProjectFolder() }
-                    .keyboardShortcut("o")
-                    .controlSize(.large)
+        ZStack {
+            Theme.bgPrimary
+            VStack(spacing: 28) {
+                if let logo = Resources.image("AppIcon") {
+                    Image(nsImage: logo)
+                        .resizable()
+                        .frame(width: 112, height: 112)
+                        .shadow(color: .black.opacity(0.35), radius: 12, y: 6)
+                }
+                VStack(spacing: 8) {
+                    (Text("Slides ") + Text("to").italic().foregroundColor(Theme.green) + Text(" Video"))
+                        .font(Theme.ui(34, .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("Turn a slide deck and a script into a narrated video.")
+                        .font(Theme.ui(14))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                HStack(spacing: 10) {
+                    Button {
+                        model.choosePDF()
+                    } label: {
+                        Label("New from PDF", systemImage: "doc.badge.plus")
+                    }
+                    .buttonStyle(.editor(.primary))
+                    Button {
+                        model.chooseProjectFolder()
+                    } label: {
+                        Label("Open Project Folder", systemImage: "folder")
+                    }
+                    .buttonStyle(.editor(.secondary))
+                }
             }
         }
-        .padding(60)
-        .frame(minWidth: 640, minHeight: 440)
+        .gesture(WindowDragGesture())
     }
 }
