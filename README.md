@@ -48,6 +48,8 @@ macos/Packaging/build_dmg.sh
 
 Choose **New from PDF** and pick your slides. The app creates `script.md` next to the PDF with one section per page. In Settings, pick a TTS engine and a voice sample, then click **Load Engine**. The first load installs the engine's Python environment, which takes a few minutes.
 
+Shortcuts: **←/→** switch slides, **⌘G** regenerates the current slide, **⌘↩** plays the whole talk, **⌘E** exports the video, and **⌘S** saves the script.
+
 Speed on an M1 Max, after the model has loaded:
 
 | Engine     | Time per second of speech |
@@ -63,7 +65,7 @@ The app runs one `ssh` process that starts the worker from the release matching 
 
 ## Cloud APIs
 
-Pick ElevenLabs, Cartesia, or Custom HTTP endpoint as the TTS engine, paste your API key in Settings, and click **Connect**. Keys are stored in the macOS Keychain. The app clones your voice sample once per provider and remembers the voice ID. Before **Generate All Audio** sends anything to a paid API, it shows how many characters it will send and asks you to confirm.
+Pick ElevenLabs, Cartesia, or Custom HTTP endpoint as the TTS engine, paste your API key in Settings, and click **Connect**. Keys are stored in the macOS Keychain. The app clones your voice sample once per provider and remembers the voice ID. When you change the voice sample, it creates the new clone and then deletes the old one from your account. Before **Generate All Audio** sends anything to a paid API, it shows how many characters it will send and asks you to confirm.
 
 The custom endpoint posts a JSON body you write, with `{{text}}`, `{{language}}`, and `{{voice_id}}` placeholders, and accepts an audio file, raw 16-bit PCM, or JSON with a base64 audio field in response.
 
@@ -76,7 +78,7 @@ my-talk/
   talk.pdf               # slides
   script.md              # narration, one section per slide
   voice_sample.m4a       # voice to clone
-  slides-to-video.json   # engine, language, pause, speed, click
+  slides-to-video.json   # engine, language, pause, speed, click, export settings
   .cache/                # generated audio
 ```
 
@@ -120,16 +122,19 @@ cd macos
 S2V_INTEGRATION=1 S2V_VOICE=/path/to/voice.m4a S2V_ENGINE=chatterbox swift test --filter IntegrationTests
 ```
 
+Add `S2V_SOURCE=release` to run the worker from the GitHub release, the way a downloaded app does. To export an existing project as a test, run `S2V_EXPORT_PROJECT=/path/to/project swift test --filter ProjectExportTests`.
+
 ## Project Structure
 
 ```
 macos/
   Sources/SlidesToVideo/        # app entry point
   Sources/SlidesToVideoKit/
-    Model/                      # script format, clip cache, narration track, audio files
-    Speech/                     # worker process, launch commands, engine controller
+    Model/                      # script format, clip cache, narration track, video export
+    Speech/                     # worker process, SSH and cloud backends, engine controller
     Views/                      # SwiftUI interface
   Tests/
+  Packaging/                    # app icon and DMG build script
 src/slides_to_video/
   worker.py                     # slides-to-video-worker
   speech.py                     # narration with [pause] markers, ambient loop
