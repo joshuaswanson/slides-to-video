@@ -1,0 +1,191 @@
+{
+  "scripts": [
+    {
+      "content": "# Example Presentation Script\n\n---\n\n## Slide 1 - Title\n\nWelcome to this presentation. Today we will walk through a brief example of how slides-to-video works.\n\n---\n\n## Slide 2 - Overview\n\nThis tool takes three inputs: a PDF slide deck, a markdown script like this one, and a short voice sample. It clones your voice and generates a narrated video automatically.\n\n---\n\n## Slide 3 - Conclusion\n\nThat's all there is to it. Thanks for watching.\n",
+      "slides": [
+        {
+          "num": 1,
+          "text": "Welcome to this presentation. Today we will walk through a brief example of how slides-to-video works.",
+          "narration": "Welcome to this presentation. Today we will walk through a brief example of how slides-to-video works."
+        },
+        {
+          "num": 2,
+          "text": "This tool takes three inputs: a PDF slide deck, a markdown script like this one, and a short voice sample. It clones your voice and generates a narrated video automatically.",
+          "narration": "This tool takes three inputs: a PDF slide deck, a markdown script like this one, and a short voice sample. It clones your voice and generates a narrated video automatically."
+        },
+        {
+          "num": 3,
+          "text": "That's all there is to it. Thanks for watching.",
+          "narration": "That's all there is to it. Thanks for watching."
+        }
+      ]
+    },
+    {
+      "content": "# Talk\n\n---\n\n## Slide 1 - Title\n\nHello there.\n\n---\n\n## Slide 2\n\nLine one\ncontinues.\n\n\nSecond [pause 0.2] para.\n\n---\n\n## Slide 3\n",
+      "slides": [
+        {
+          "num": 1,
+          "text": "Hello there.",
+          "narration": "Hello there."
+        },
+        {
+          "num": 2,
+          "text": "Line one\ncontinues.\n\nSecond [pause 0.2] para.",
+          "narration": "Line one continues. Second [pause 0.2] para."
+        },
+        {
+          "num": 3,
+          "text": "",
+          "narration": ""
+        }
+      ]
+    },
+    {
+      "content": "## Slide 1\n  indented line  \n\tand a tab\n---   \n## Slide 2 - x\n# extra heading\nText --- with dashes\n",
+      "slides": [
+        {
+          "num": 1,
+          "text": "indented line\nand a tab",
+          "narration": "indented line and a tab"
+        },
+        {
+          "num": 2,
+          "text": "Text --- with dashes",
+          "narration": "Text --- with dashes"
+        }
+      ]
+    },
+    {
+      "content": "No slides here\n---\nnor here\n",
+      "slides": []
+    },
+    {
+      "content": "## Slide 7\n\nOnly one.",
+      "slides": [
+        {
+          "num": 7,
+          "text": "Only one.",
+          "narration": "Only one."
+        }
+      ]
+    }
+  ],
+  "updates": [
+    {
+      "script": 1,
+      "slide": 2,
+      "text": "New text.\n\nSecond paragraph.",
+      "result": "# Talk\n\n---\n\n## Slide 1 - Title\n\nHello there.\n\n---\n\n## Slide 2\n\nNew text.\n\nSecond paragraph.\n\n---\n\n## Slide 3\n"
+    },
+    {
+      "script": 1,
+      "slide": 3,
+      "text": "Filled in.",
+      "result": "# Talk\n\n---\n\n## Slide 1 - Title\n\nHello there.\n\n---\n\n## Slide 2\n\nLine one\ncontinues.\n\n\nSecond [pause 0.2] para.\n\n---\n\n## Slide 3\n\nFilled in.\n"
+    },
+    {
+      "script": 1,
+      "slide": 1,
+      "text": "",
+      "result": "# Talk\n\n---\n\n## Slide 1 - Title\n\n---\n\n## Slide 2\n\nLine one\ncontinues.\n\n\nSecond [pause 0.2] para.\n\n---\n\n## Slide 3\n"
+    },
+    {
+      "script": 2,
+      "slide": 2,
+      "text": "  spaced  \n\n\n\nout  ",
+      "result": "## Slide 1\n  indented line  \n\tand a tab\n---   \n## Slide 2 - x\n# extra heading\n\nspaced\n\nout\n"
+    },
+    {
+      "script": 4,
+      "slide": 7,
+      "text": "Replaced.",
+      "result": "## Slide 7\n\nReplaced."
+    },
+    {
+      "script": 1,
+      "slide": 2,
+      "text": "a\n---\nb",
+      "error": "Narration cannot contain a line with only '---'"
+    },
+    {
+      "script": 1,
+      "slide": 9,
+      "text": "missing",
+      "error": "Slide 9 not found in script"
+    }
+  ],
+  "pauses": [
+    {
+      "text": "[pause] Hi [pause 1.5] there [pause .25]",
+      "items": [
+        0.5,
+        "Hi",
+        1.5,
+        "there",
+        0.25
+      ],
+      "stripped": "Hi there"
+    },
+    {
+      "text": "No pauses",
+      "items": [
+        "No pauses"
+      ],
+      "stripped": "No pauses"
+    },
+    {
+      "text": "",
+      "items": [],
+      "stripped": ""
+    },
+    {
+      "text": "A [pause]B[pause 2]  C",
+      "items": [
+        "A",
+        0.5,
+        "B",
+        2.0,
+        "C"
+      ],
+      "stripped": "A B C"
+    },
+    {
+      "text": "[pause 3]",
+      "items": [
+        3.0
+      ],
+      "stripped": ""
+    }
+  ],
+  "hashes": [
+    {
+      "parts": [
+        "qwen3",
+        "en",
+        "abcdef0123456789"
+      ],
+      "hash": "4bc0b0350f965af9"
+    },
+    {
+      "parts": [
+        "x"
+      ],
+      "hash": "2d711642b726b044"
+    },
+    {
+      "parts": [
+        "",
+        "",
+        ""
+      ],
+      "hash": "96a296d224f285c6"
+    },
+    {
+      "parts": [
+        "Grüße",
+        "日本語"
+      ],
+      "hash": "48ecaede4a920300"
+    }
+  ]
+}
