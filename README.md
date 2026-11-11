@@ -19,6 +19,14 @@ A Mac app that turns a slide deck into a narrated video. Open a PDF, write the n
 - **Ambient pauses** filled with the voice model's own background noise
 - **Speed control** and inline `[pause]` markers
 
+## Install
+
+Download `SlidesToVideo-<version>.dmg` from the [latest release](https://github.com/joshuaswanson/slides-to-video/releases/latest), open it, and drag **Slides to Video** to Applications.
+
+The app is not notarized by Apple, so macOS blocks it on first launch. Open it once, then go to **System Settings > Privacy & Security** and click **Open Anyway**.
+
+To generate voices on your Mac or a remote server, install [uv](https://docs.astral.sh/uv/). The cloud APIs need only an API key.
+
 ## Requirements
 
 - macOS 15 or later, Apple Silicon recommended
@@ -30,6 +38,12 @@ A Mac app that turns a slide deck into a narrated video. Open a PDF, write the n
 ```bash
 cd macos
 swift run SlidesToVideo
+```
+
+To build the app bundle and DMG (universal, ad-hoc signed) into `macos/dist/`:
+
+```bash
+macos/Packaging/build_dmg.sh
 ```
 
 Choose **New from PDF** and pick your slides. The app creates `script.md` next to the PDF with one section per page. In Settings, pick a TTS engine and a voice sample, then click **Load Engine**. The first load installs the engine's Python environment, which takes a few minutes.

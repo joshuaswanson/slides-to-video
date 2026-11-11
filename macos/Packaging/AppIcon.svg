@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <filter id="dock-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="14"/>
+      <feOffset dy="10"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.3"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#dock-shadow)">
+    <svg x="100" y="90" width="824" height="824" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2e2e34"/><stop offset="1" stop-color="#16161a"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5cc462"/><stop offset="1" stop-color="#3d8b40"/>
+    </linearGradient>
+    <clipPath id="card"><rect x="152" y="282" width="720" height="460" rx="52"/></clipPath>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="url(#bg)"/>
+  <rect x="3" y="3" width="1018" height="1018" rx="227" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="6"/>
+  <g clip-path="url(#card)">
+    <rect x="152" y="282" width="720" height="460" fill="#222226"/>
+    <polygon points="152,282 600,282 470,742 152,742" fill="#e8e8ec"/>
+    <rect x="210" y="386" width="220" height="55" rx="27" fill="#a4a4ac"/>
+  <rect x="210" y="499" width="280" height="33" rx="16" fill="#a4a4ac"/>
+  <rect x="210" y="571" width="240" height="33" rx="16" fill="#a4a4ac"/>
+  <rect x="210" y="642" width="264" height="33" rx="16" fill="#a4a4ac"/>
+    <rect x="573" y="304" width="52" height="42" rx="11" fill="#55555d"/>
+  <rect x="651" y="304" width="52" height="42" rx="11" fill="#55555d"/>
+  <rect x="729" y="304" width="52" height="42" rx="11" fill="#55555d"/>
+  <rect x="807" y="304" width="52" height="42" rx="11" fill="#55555d"/>
+    <rect x="520" y="678" width="52" height="42" rx="11" fill="#55555d"/>
+  <rect x="614" y="678" width="52" height="42" rx="11" fill="#55555d"/>
+  <rect x="706" y="678" width="52" height="42" rx="11" fill="#55555d"/>
+  <rect x="800" y="678" width="52" height="42" rx="11" fill="#55555d"/>
+    <line x1="600" y1="262" x2="470" y2="762" stroke="#4caf50" stroke-width="26"/>
+  </g>
+  <rect x="152" y="282" width="720" height="460" rx="52" fill="none" stroke="#4a4a52" stroke-width="6"/>
+  <path d="M651 437 L651 587 L755 512 Z" fill="#4caf50" stroke="#4caf50" stroke-width="24" stroke-linejoin="round"/>
+</svg>
+  </g>
+</svg>
