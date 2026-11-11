@@ -11,6 +11,18 @@ if [ "$VERSION" != "$APP_VERSION" ]; then
     exit 1
 fi
 
+# Downloaded apps install their worker from the v$VERSION tag on GitHub, so it must exist there
+# and point at the commit being built.
+TAG_COMMIT=$(git ls-remote origin "refs/tags/v$VERSION^{}" | cut -f1)
+if [ -z "$TAG_COMMIT" ]; then
+    echo "Tag v$VERSION is not on GitHub. Push it first: git tag -a v$VERSION -m v$VERSION && git push origin v$VERSION" >&2
+    exit 1
+fi
+if [ "$TAG_COMMIT" != "$(git rev-parse HEAD)" ]; then
+    echo "Tag v$VERSION points at ${TAG_COMMIT:0:7}, not the checked-out commit $(git rev-parse --short HEAD)" >&2
+    exit 1
+fi
+
 APP_NAME="Slides to Video"
 DIST=dist
 APP="$DIST/$APP_NAME.app"

@@ -46,6 +46,12 @@ To build the app bundle and DMG (universal, ad-hoc signed) into `macos/dist/`:
 macos/Packaging/build_dmg.sh
 ```
 
+To publish a release:
+
+1. Set the same new version in `pyproject.toml` and `WorkerLaunch.packageVersion`, run `uv lock`, and commit.
+2. Tag and push: `git tag -a vX.Y.Z -m vX.Y.Z && git push origin main vX.Y.Z`. Downloaded apps install their voice engines from this tag, so it must exist before anyone downloads the DMG.
+3. Run `macos/Packaging/build_dmg.sh`, which refuses to build if the tag is missing on GitHub or points at another commit, and attach the DMG to a GitHub release for the tag.
+
 Choose **New from PDF** and pick your slides. The app creates `script.md` next to the PDF with one section per page. In Settings, pick a TTS engine and a voice sample, then click **Load Engine**. The first load installs the engine's Python environment, which takes a few minutes.
 
 Shortcuts: **←/→** switch slides, **⌘G** regenerates the current slide, **⌘↩** plays the whole talk, **⌘E** exports the video, and **⌘S** saves the script.
