@@ -114,9 +114,22 @@ struct WorkerLaunchTests {
         let launch = WorkerLaunch.local(engine: engine, uv: URL(filePath: "/u/uv"), source: WorkerLaunch.repository, environmentsDirectory: URL(filePath: "/e"))
         #expect(launch.arguments == [
             "tool", "run", "--python", "3.11",
-            "--from", "slides-to-video[chatterbox] @ git+https://github.com/joshuaswanson/slides-to-video",
+            "--from", "slides-to-video[chatterbox] @ git+https://github.com/joshuaswanson/slides-to-video@v\(WorkerLaunch.packageVersion)",
             "slides-to-video-worker",
         ])
+    }
+
+    @Test func explicitRefIsKept() {
+        let engine = EngineInfo.named("qwen3")!
+        #expect(WorkerLaunch.requirement(source: "https://github.com/me/fork@main", engine: engine)
+            == "slides-to-video[qwen3] @ git+https://github.com/me/fork@main")
+    }
+
+    @Test func packageVersionMatchesPyproject() throws {
+        let pyproject = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent().appending(path: "pyproject.toml")
+        let text = try String(contentsOf: pyproject, encoding: .utf8)
+        #expect(text.contains("version = \"\(WorkerLaunch.packageVersion)\""))
     }
 
     @Test func checkoutSourceUsesPerEngineEnvironment() {

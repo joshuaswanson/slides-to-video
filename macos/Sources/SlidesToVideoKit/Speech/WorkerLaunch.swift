@@ -32,12 +32,18 @@ public struct WorkerLaunch: Equatable {
     public var environment: [String: String]
 
     public static let repository = "https://github.com/joshuaswanson/slides-to-video"
+    /// Must equal the version in pyproject.toml. Each app build installs the worker from the
+    /// matching release tag, so later pushes to the repository cannot change what it runs.
+    public static let packageVersion = "0.3.0"
 
-    /// The package spec uv installs the worker from: a local checkout or the public repository.
+    /// The package spec uv installs the worker from: a local checkout, or a git URL pinned to
+    /// `v<packageVersion>` unless the URL already names a ref after `@`.
     public static func requirement(source: String, engine: EngineInfo) -> String {
-        isLocalPath(source)
-            ? "slides-to-video[\(engine.id)] @ \(URL(filePath: source).absoluteString)"
-            : "slides-to-video[\(engine.id)] @ git+\(source)"
+        if isLocalPath(source) {
+            return "slides-to-video[\(engine.id)] @ \(URL(filePath: source).absoluteString)"
+        }
+        let pinned = source.dropFirst("https://".count).contains("@") ? source : "\(source)@v\(packageVersion)"
+        return "slides-to-video[\(engine.id)] @ git+\(pinned)"
     }
 
     static func isLocalPath(_ source: String) -> Bool {

@@ -5,25 +5,25 @@ resolution-markers = [
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
-    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 conflicts = [[
@@ -615,22 +615,22 @@ resolution-markers = [
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
-    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a3/1d/d730c664fcb4f1d264a722722a3134cf0881854f73c1fd58abf87572f232/filelock-4.2.9.tar.gz", hash = "sha256:96530b7c538d4ea08493ab067247aab7948c54d8cd622cce711c97cccc5d9896", size = 663116, upload-time = "2026-11-04T18:37:10.014Z" }
@@ -1080,16 +1080,16 @@ name = "librosa"
 version = "0.11.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version == '3.11.*' and sys_platform == 'win32'",
-    "python_full_version == '3.11.*' and sys_platform == 'emscripten'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
-    "python_full_version < '3.11'",
     "python_full_version >= '3.13' and sys_platform == 'win32'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*' and sys_platform == 'win32'",
+    "python_full_version == '3.11.*' and sys_platform == 'emscripten'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.11'",
 ]
 dependencies = [
     { name = "audioread", marker = "(python_full_version < '3.12' and extra == 'extra-15-slides-to-video-qwen3') or extra == 'extra-15-slides-to-video-chatterbox'" },
@@ -1458,12 +1458,12 @@ resolution-markers = [
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
@@ -1719,12 +1719,12 @@ resolution-markers = [
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/95/b0/c7453d0b6e2073c3264468b106ee1563750cecc910965e67357e3698c83e/numpy-2.5.4.tar.gz", hash = "sha256:9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a", size = 20866315, upload-time = "2026-10-10T20:05:31.422Z" }
@@ -1776,10 +1776,10 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 wheels = [
@@ -1811,10 +1811,10 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 wheels = [
@@ -1848,10 +1848,10 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 wheels = [
@@ -1883,10 +1883,10 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 wheels = [
@@ -1908,7 +1908,7 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-chatterbox'" },
+    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9f/fd/713452cd72343f682b1c7b9321e23829f00b842ceaedcda96e742ea0b0b3/nvidia_cudnn_cu12-9.1.0.70-py3-none-manylinux2014_x86_64.whl", hash = "sha256:165764f44ef8c61fcdfdfdbe769d687e06374059fbb388b6c89ecb0e28793a6f", size = 664752741, upload-time = "2024-04-22T15:24:15.253Z" },
@@ -1922,14 +1922,14 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 dependencies = [
-    { name = "nvidia-cublas-cu12", version = "12.6.4.1", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-qwen3' or extra != 'extra-15-slides-to-video-chatterbox'" },
+    { name = "nvidia-cublas-cu12", version = "12.6.4.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/99/93/a201a12d3ec1caa8c6ac34c1c2f9eeb696b886f0c36ff23c638b46603bd0/nvidia_cudnn_cu12-9.5.1.17-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:9fd4584468533c61873e5fda8ca41bac3a38bcb2d12350830c69b0a96a7e4def", size = 570523509, upload-time = "2024-10-25T19:53:03.148Z" },
@@ -1948,7 +1948,7 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-chatterbox'" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7a/8a/0e728f749baca3fbeffad762738276e5df60851958be7783af121a7221e7/nvidia_cufft_cu12-11.2.1.3-py3-none-manylinux2014_aarch64.whl", hash = "sha256:5dad8008fc7f92f5ddfa2101430917ce2ffacd86824914c82e28990ad7f00399", size = 211422548, upload-time = "2024-06-18T19:33:39.396Z" },
@@ -1963,14 +1963,14 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 dependencies = [
-    { name = "nvidia-nvjitlink-cu12", version = "12.6.85", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-qwen3' or extra != 'extra-15-slides-to-video-chatterbox'" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.6.85", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1f/37/c50d2b2f2c07e146776389e3080f4faf70bcc4fa6e19d65bb54ca174ebc3/nvidia_cufft_cu12-11.3.0.4-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:d16079550df460376455cba121db6564089176d9bac9e4f360493ca4741b22a6", size = 200164144, upload-time = "2024-11-20T17:40:58.288Z" },
@@ -2012,10 +2012,10 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 wheels = [
@@ -2037,9 +2037,9 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-chatterbox'" },
-    { name = "nvidia-cusparse-cu12", version = "12.3.1.170", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-chatterbox'" },
-    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-chatterbox'" },
+    { name = "nvidia-cublas-cu12", version = "12.4.5.8", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3')" },
+    { name = "nvidia-cusparse-cu12", version = "12.3.1.170", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3')" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/46/6b/a5c33cf16af09166845345275c34ad2190944bcc6026797a39f8e0a282e0/nvidia_cusolver_cu12-11.6.1.9-py3-none-manylinux2014_aarch64.whl", hash = "sha256:d338f155f174f90724bbde3758b7ac375a70ce8e706d70b018dd3375545fc84e", size = 127634111, upload-time = "2024-06-18T19:35:01.793Z" },
@@ -2054,16 +2054,16 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 dependencies = [
-    { name = "nvidia-cublas-cu12", version = "12.6.4.1", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-qwen3' or extra != 'extra-15-slides-to-video-chatterbox'" },
-    { name = "nvidia-cusparse-cu12", version = "12.5.4.2", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-qwen3' or extra != 'extra-15-slides-to-video-chatterbox'" },
-    { name = "nvidia-nvjitlink-cu12", version = "12.6.85", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-qwen3' or extra != 'extra-15-slides-to-video-chatterbox'" },
+    { name = "nvidia-cublas-cu12", version = "12.6.4.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3')" },
+    { name = "nvidia-cusparse-cu12", version = "12.5.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3')" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.6.85", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/93/17/dbe1aa865e4fdc7b6d4d0dd308fdd5aaab60f939abfc0ea1954eac4fb113/nvidia_cusolver_cu12-11.7.1.2-py3-none-manylinux2014_aarch64.whl", hash = "sha256:0ce237ef60acde1efc457335a2ddadfd7610b892d94efee7b776c64bb1cac9e0", size = 157833628, upload-time = "2024-10-01T17:05:05.591Z" },
@@ -2084,7 +2084,7 @@ resolution-markers = [
     "python_full_version < '3.11'",
 ]
 dependencies = [
-    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-chatterbox'" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.4.127", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/96/a9/c0d2f83a53d40a4a41be14cea6a0bf9e668ffcf8b004bd65633f433050c0/nvidia_cusparse_cu12-12.3.1.170-py3-none-manylinux2014_aarch64.whl", hash = "sha256:9d32f62896231ebe0480efd8a7f702e143c98cfaa0e8a76df3386c1ba2b54df3", size = 207381987, upload-time = "2024-06-18T19:35:32.989Z" },
@@ -2099,14 +2099,14 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 dependencies = [
-    { name = "nvidia-nvjitlink-cu12", version = "12.6.85", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-qwen3' or extra != 'extra-15-slides-to-video-chatterbox'" },
+    { name = "nvidia-nvjitlink-cu12", version = "12.6.85", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/eb/eb/6681efd0aa7df96b4f8067b3ce7246833dd36830bb4cec8896182773db7d/nvidia_cusparse_cu12-12.5.4.2-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:d25b62fb18751758fe3c93a4a08eff08effedfe4edf1c6bb5afd0890fe88f887", size = 216451147, upload-time = "2024-11-20T17:44:18.055Z" },
@@ -2139,10 +2139,10 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 wheels = [
@@ -2172,10 +2172,10 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 wheels = [
@@ -2206,10 +2206,10 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 wheels = [
@@ -2241,10 +2241,10 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 wheels = [
@@ -2490,10 +2490,10 @@ name = "pandas"
 version = "2.3.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version < '3.11'",
     "python_full_version == '3.11.*' and sys_platform == 'win32'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.11'",
 ]
 dependencies = [
     { name = "numpy", version = "1.25.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.12' and extra == 'extra-15-slides-to-video-chatterbox') or (extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3')" },
@@ -2802,22 +2802,22 @@ resolution-markers = [
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
-    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cb/27/eeb9f307bf07060f3d9f9aa0fb8c15b01bdfded0a941e4b2719c7f94cacd/pycparser-3.12.tar.gz", hash = "sha256:f03387877eab82ce01bbdfd0ba7252ee55a90b1c708d5129e2ce915475cf1db6", size = 158785, upload-time = "2026-10-22T13:40:03.56Z" }
@@ -3068,22 +3068,22 @@ resolution-markers = [
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
-    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/9f/b7/15b905f6142a9a8a68f66900788da1a32e4d4254452783b37ad1eccb0506/python_multipart-0.0.33.tar.gz", hash = "sha256:b8112424a6abd162ec08d390565dd113ad699f2fe6fef3c987b8bbcbfe9e390d", size = 50499, upload-time = "2026-10-31T14:23:47.461Z" }
@@ -3478,13 +3478,13 @@ name = "scipy"
 version = "1.15.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version < '3.11'",
     "python_full_version == '3.12.*' and sys_platform == 'win32'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version == '3.11.*' and sys_platform == 'win32'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.11'",
 ]
 dependencies = [
     { name = "numpy", version = "1.25.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.12' and extra == 'extra-15-slides-to-video-chatterbox') or (extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3')" },
@@ -3676,10 +3676,10 @@ resolution-markers = [
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/70/b3/c19426f783614d625699a4b247faf628ea9ab1db228674491767b417f9e1/setuptools-84.2.1.tar.gz", hash = "sha256:3ff8b3b5492a0aa66960f4419365a86b84e013070d4313e4d4a6894f5d64d6bc", size = 1230289, upload-time = "2026-10-20T19:01:37.742Z" }
@@ -3707,7 +3707,7 @@ wheels = [
 
 [[package]]
 name = "slides-to-video"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
@@ -4006,10 +4006,10 @@ resolution-markers = [
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 dependencies = [
@@ -4056,12 +4056,12 @@ resolution-markers = [
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 dependencies = [
@@ -4262,12 +4262,12 @@ resolution-markers = [
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 dependencies = [
@@ -4369,12 +4369,12 @@ resolution-markers = [
     "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
+    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 dependencies = [
@@ -4509,14 +4509,14 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.12.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
-    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version >= '3.12' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version == '3.11.*' and sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version == '3.11.*' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
+    "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3'",
     "python_full_version < '3.11' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3'",
 ]
 dependencies = [
-    { name = "setuptools", version = "84.2.1", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-15-slides-to-video-qwen3' or extra != 'extra-15-slides-to-video-chatterbox'" },
+    { name = "setuptools", version = "84.2.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox') or (python_full_version < '3.11' and sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform != 'emscripten' and sys_platform != 'win32' and extra != 'extra-15-slides-to-video-chatterbox') or (sys_platform == 'emscripten' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'emscripten' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3') or (sys_platform == 'win32' and extra != 'extra-15-slides-to-video-chatterbox' and extra != 'extra-15-slides-to-video-qwen3')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8d/a9/549e51e9b1b2c9b854fd761a1d23df0ba2fbc60bd0c13b489ffa518cfcb7/triton-3.3.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b74db445b1c562844d3cfad6e9679c72e93fdfb1a90a24052b03bb5c49d1242e", size = 155600257, upload-time = "2025-05-29T23:39:36.085Z" },
