@@ -7,6 +7,7 @@ struct ProjectView: View {
     @State private var showInspector = true
     @State private var speech = SpeechController()
     @State private var player = ClipPlayer()
+    @State private var talk = TalkPlayer()
 
     private var selectedSlide: Slide? {
         project.slides.first { $0.num == selection } ?? project.slides.first
@@ -30,9 +31,15 @@ struct ProjectView: View {
                 }
             }
             Divider()
+            if talk.isActive || talk.error != nil {
+                PlaybackBar(talk: talk)
+            }
             TimelineStrip(project: project, selection: Binding(
                 get: { selectedSlide?.num },
-                set: { selection = $0 }
+                set: {
+                    talk.stop()
+                    selection = $0
+                }
             ))
             .frame(height: 132)
         }
@@ -42,6 +49,16 @@ struct ProjectView: View {
                 .inspectorColumnWidth(min: 240, ideal: 280, max: 360)
         }
         .toolbar {
+            ToolbarItem {
+                Button {
+                    player.stop()
+                    talk.toggle(project)
+                } label: {
+                    Label(talk.isActive ? "Stop" : "Play All", systemImage: talk.isActive ? "stop.fill" : "play.fill")
+                }
+                .help("Play the whole talk with pauses and clicks")
+                .keyboardShortcut(.return, modifiers: .command)
+            }
             ToolbarItem {
                 GenerateAllButton(project: project, speech: speech)
             }
@@ -58,9 +75,15 @@ struct ProjectView: View {
         }
         .focusable()
         .focusEffectDisabled()
+        .onAppear {
+            talk.onSlideChange = { index in
+                if project.slides.indices.contains(index) { selection = project.slides[index].num }
+            }
+        }
         .onDisappear {
             speech.stop()
             player.stop()
+            talk.stop()
         }
         .onKeyPress(.leftArrow) { move(-1) }
         .onKeyPress(.rightArrow) { move(1) }
@@ -71,6 +94,7 @@ struct ProjectView: View {
               let index = project.slides.firstIndex(of: current) else { return .ignored }
         let next = index + delta
         guard project.slides.indices.contains(next) else { return .handled }
+        talk.stop()
         selection = project.slides[next].num
         return .handled
     }

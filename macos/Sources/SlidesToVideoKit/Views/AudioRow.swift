@@ -5,7 +5,9 @@ import SwiftUI
 @Observable
 final class ClipPlayer: NSObject, AVAudioPlayerDelegate {
     private(set) var playingURL: URL?
+    private(set) var progress: Double = 0
     private var player: AVAudioPlayer?
+    private var timer: Timer?
 
     func toggle(_ url: URL) {
         if playingURL == url {
@@ -18,12 +20,21 @@ final class ClipPlayer: NSObject, AVAudioPlayerDelegate {
         player.play()
         self.player = player
         playingURL = url
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, let player = self.player, player.duration > 0 else { return }
+                self.progress = player.currentTime / player.duration
+            }
+        }
     }
 
     func stop() {
+        timer?.invalidate()
+        timer = nil
         player?.stop()
         player = nil
         playingURL = nil
+        progress = 0
     }
 
     nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
@@ -44,6 +55,11 @@ struct AudioRow: View {
         let fresh = cache?.isFresh(slide) ?? false
         let isGenerating = speech.generating.contains(slide.num)
 
+        VStack(spacing: 8) {
+        if fresh, let url {
+            WaveformView(peaks: Waveform.peaks(url), progress: player.playingURL == url ? player.progress : nil)
+                .frame(height: 44)
+        }
         HStack(spacing: 10) {
             Button {
                 if let url { player.toggle(url) }
@@ -80,6 +96,7 @@ struct AudioRow: View {
             }
             .disabled(!speech.isReady || isGenerating || slide.narration.isEmpty)
             .keyboardShortcut("g", modifiers: .command)
+        }
         }
         .padding(10)
         .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
