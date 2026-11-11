@@ -16,8 +16,10 @@ struct RemoteLaunchTests {
         ])
         #expect(launch.arguments[11] == "me@gpu.example.org")
         let command = launch.arguments[12]
-        #expect(command.contains("CUDA_VISIBLE_DEVICES='0,1' exec uvx --python 3.12"))
-        #expect(command.contains("--from 'slides-to-video[qwen3] @ git+https://github.com/joshuaswanson/slides-to-video@v\(WorkerLaunch.packageVersion)' slides-to-video-worker"))
+        #expect(command.hasPrefix("sh -c '"))
+        #expect(command.contains("export CUDA_VISIBLE_DEVICES="))
+        #expect(command.contains("archive/refs/tags/v\(WorkerLaunch.packageVersion).tar.gz"))
+        #expect(command.contains("--extra qwen3 --python 3.12 slides-to-video-worker"))
         #expect(!launch.arguments.contains { $0.contains("ControlMaster") || $0.contains("Reconnect") })
     }
 
@@ -27,7 +29,7 @@ struct RemoteLaunchTests {
         host.command = "cd ~/s2v && uv run --extra chatterbox slides-to-video-worker"
         host.cudaDevices = "4,5"
         #expect(WorkerLaunch.remoteCommand(engine: EngineInfo.named("chatterbox")!, host: host)
-            == "CUDA_VISIBLE_DEVICES='4,5' cd ~/s2v && uv run --extra chatterbox slides-to-video-worker")
+            == "export CUDA_VISIBLE_DEVICES='4,5'; cd ~/s2v && uv run --extra chatterbox slides-to-video-worker")
         #expect(WorkerLaunch.shellQuote("it's") == "'it'\\''s'")
         host.cudaDevices = ""
         host.port = nil

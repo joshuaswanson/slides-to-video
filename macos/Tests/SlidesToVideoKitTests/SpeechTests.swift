@@ -109,20 +109,19 @@ struct WorkerLaunchTests {
         #expect(WorkerLaunch.defaultSource(executable: URL(filePath: "/Applications/Slides to Video.app/Contents/MacOS/x")) == WorkerLaunch.repository)
     }
 
-    @Test func gitSourceUsesUvToolRun() {
+    @Test func releaseSourceRunsFrozenFromTagArchive() {
         let engine = EngineInfo.named("chatterbox")!
-        let launch = WorkerLaunch.local(engine: engine, uv: URL(filePath: "/u/uv"), source: WorkerLaunch.repository, environmentsDirectory: URL(filePath: "/e"))
-        #expect(launch.arguments == [
-            "tool", "run", "--python", "3.11",
-            "--from", "slides-to-video[chatterbox] @ git+https://github.com/joshuaswanson/slides-to-video@v\(WorkerLaunch.packageVersion)",
-            "slides-to-video-worker",
-        ])
+        let launch = WorkerLaunch.local(engine: engine, uv: URL(filePath: "/u/uv"), source: WorkerLaunch.repository, environmentsDirectory: URL(filePath: "/s/envs"))
+        #expect(launch.executable.path == "/bin/sh" && launch.arguments.first == "-c")
+        let script = launch.arguments[1]
+        #expect(script.contains("curl -fsSL 'https://github.com/joshuaswanson/slides-to-video/archive/refs/tags/v\(WorkerLaunch.packageVersion).tar.gz'"))
+        #expect(script.contains("exec '/u/uv' run --frozen --no-dev --project \"$src\" --extra chatterbox --python 3.11 slides-to-video-worker"))
+        #expect(script.contains("base='/s'"))
     }
 
-    @Test func explicitRefIsKept() {
-        let engine = EngineInfo.named("qwen3")!
-        #expect(WorkerLaunch.requirement(source: "https://github.com/me/fork@main", engine: engine)
-            == "slides-to-video[qwen3] @ git+https://github.com/me/fork@main")
+    @Test func archiveRefs() {
+        #expect(WorkerLaunch.archive(source: "https://github.com/me/fork@main").url == "https://github.com/me/fork/archive/main.tar.gz")
+        #expect(WorkerLaunch.archive(source: "https://github.com/me/fork@v1.2.0").url == "https://github.com/me/fork/archive/refs/tags/v1.2.0.tar.gz")
     }
 
     @Test func packageVersionMatchesPyproject() throws {

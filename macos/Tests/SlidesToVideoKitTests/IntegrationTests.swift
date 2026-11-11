@@ -24,7 +24,7 @@ struct IntegrationTests {
         let settings = AppSettings.shared
         let checkout = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
             .deletingLastPathComponent().deletingLastPathComponent()
-        settings.packageSource = checkout.path
+        settings.packageSource = env["S2V_SOURCE"] == "release" ? WorkerLaunch.repository : checkout.path
         let speech = SpeechController()
         await speech.start(engine: engine, device: env["S2V_DEVICE"] ?? "mps", settings: settings)
         #expect(speech.isReady, "\(speech.state)")

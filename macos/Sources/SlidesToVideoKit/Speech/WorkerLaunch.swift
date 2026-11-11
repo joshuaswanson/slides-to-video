@@ -5,7 +5,7 @@ public struct RemoteHost: Codable, Equatable, Sendable {
     public var destination = ""
     public var port: String?
     public var cudaDevices = ""
-    /// Replaces the default uvx command, for example to run a checkout on the server.
+    /// Replaces the default command, for example to run a checkout on the server.
     public var command = ""
 
     public init() {}
@@ -27,19 +27,9 @@ public struct WorkerLaunch: Equatable {
     public var environment: [String: String]
 
     public static let repository = "https://github.com/joshuaswanson/slides-to-video"
-    /// Must equal the version in pyproject.toml. Each app build installs the worker from the
+    /// Must equal the version in pyproject.toml. Each app build runs the worker from the
     /// matching release tag, so later pushes to the repository cannot change what it runs.
-    public static let packageVersion = "0.4.0"
-
-    /// The package spec uv installs the worker from: a local checkout, or a git URL pinned to
-    /// `v<packageVersion>` unless the URL already names a ref after `@`.
-    public static func requirement(source: String, engine: EngineInfo) -> String {
-        if isLocalPath(source) {
-            return "slides-to-video[\(engine.id)] @ \(URL(filePath: source).absoluteString)"
-        }
-        let pinned = source.dropFirst("https://".count).contains("@") ? source : "\(source)@v\(packageVersion)"
-        return "slides-to-video[\(engine.id)] @ git+\(pinned)"
-    }
+    public static let packageVersion = "0.4.1"
 
     static func isLocalPath(_ source: String) -> Bool {
         source.hasPrefix("/") || source.hasPrefix("~")
@@ -54,23 +44,54 @@ public struct WorkerLaunch: Equatable {
         return repository
     }
 
+    /// A GitHub repository URL, optionally followed by `@ref`. Without a ref, the app's release tag.
+    static func archive(source: String) -> (url: String, ref: String) {
+        let parts = source.split(separator: "@", maxSplits: 1).map(String.init)
+        let repo = parts[0].hasSuffix("/") ? String(parts[0].dropLast()) : parts[0]
+        let ref = parts.count > 1 ? parts[1] : "v\(packageVersion)"
+        let isTag = ref.hasPrefix("v") && ref.dropFirst().first?.isNumber == true
+        let path = isTag ? "archive/refs/tags/\(ref).tar.gz" : "archive/\(ref).tar.gz"
+        return ("\(repo)/\(path)", ref)
+    }
+
+    /// A shell script that unpacks the source archive once and runs the worker with
+    /// `uv run --frozen`, so it gets exactly the dependency versions in the release's uv.lock.
+    /// `base` and `uv` are shell expressions; one environment is kept per release and engine.
+    static func bootstrapScript(engine: EngineInfo, source: String, base: String, uv: String) -> String {
+        let (url, ref) = archive(source: source)
+        let slug = ref.map { $0.isLetter || $0.isNumber || $0 == "." ? $0 : "-" }
+        let name = String(slug)
+        return """
+        set -e
+        base=\(base)
+        src="$base/source/\(name)"
+        if [ ! -f "$src/uv.lock" ]; then
+          echo "Downloading slides-to-video \(ref)" >&2
+          tmp="$(mktemp -d)"
+          curl -fsSL \(shellQuote(url)) | tar xz -C "$tmp" --strip-components 1
+          mkdir -p "$base/source"
+          rm -rf "$src"
+          mv "$tmp" "$src"
+        fi
+        export UV_PROJECT_ENVIRONMENT="$base/envs/\(name)-\(engine.id)"
+        exec \(uv) run --frozen --no-dev --project "$src" --extra \(engine.id) --python \(engine.pythonVersion) slides-to-video-worker
+        """
+    }
+
     public static func local(engine: EngineInfo, uv: URL, source: String, environmentsDirectory: URL) -> WorkerLaunch {
         var environment = baseEnvironment(uv: uv)
         environment["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-        let arguments: [String]
         if isLocalPath(source) {
             environment["UV_PROJECT_ENVIRONMENT"] = environmentsDirectory.appending(path: engine.id).path
-            arguments = [
+            let arguments = [
                 "run", "--project", (source as NSString).expandingTildeInPath, "--extra", engine.id,
                 "--no-dev", "--python", engine.pythonVersion, "slides-to-video-worker",
             ]
-        } else {
-            arguments = [
-                "tool", "run", "--python", engine.pythonVersion,
-                "--from", requirement(source: source, engine: engine), "slides-to-video-worker",
-            ]
+            return WorkerLaunch(executable: uv, arguments: arguments, environment: environment)
         }
-        return WorkerLaunch(executable: uv, arguments: arguments, environment: environment)
+        let base = environmentsDirectory.deletingLastPathComponent().path
+        let script = bootstrapScript(engine: engine, source: source, base: shellQuote(base), uv: shellQuote(uv.path))
+        return WorkerLaunch(executable: URL(filePath: "/bin/sh"), arguments: ["-c", script], environment: environment)
     }
 
     /// One ssh process that runs the worker on a remote host. BatchMode stops ssh from asking
@@ -91,11 +112,12 @@ public struct WorkerLaunch: Equatable {
 
     public static func remoteCommand(engine: EngineInfo, host: RemoteHost) -> String {
         let devices = host.cudaDevices.trimmingCharacters(in: .whitespaces)
-        let environment = devices.isEmpty ? "" : "CUDA_VISIBLE_DEVICES=\(shellQuote(devices)) "
+        let environment = devices.isEmpty ? "" : "export CUDA_VISIBLE_DEVICES=\(shellQuote(devices)); "
         let custom = host.command.trimmingCharacters(in: .whitespacesAndNewlines)
         if !custom.isEmpty { return environment + custom }
-        let requirement = requirement(source: repository, engine: engine)
-        return "PATH=\"$HOME/.local/bin:$HOME/.cargo/bin:$PATH\" \(environment)exec uvx --python \(engine.pythonVersion) --from \(shellQuote(requirement)) slides-to-video-worker"
+        let script = bootstrapScript(engine: engine, source: repository, base: "\"$HOME/.cache/slides-to-video\"", uv: "uv")
+        let body = "export PATH=\"$HOME/.local/bin:$HOME/.cargo/bin:$PATH\"; \(environment)\(script)"
+        return "sh -c \(shellQuote(body))"
     }
 
     static func shellQuote(_ value: String) -> String {
