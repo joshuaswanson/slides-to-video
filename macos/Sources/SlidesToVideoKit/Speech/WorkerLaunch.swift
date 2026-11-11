@@ -1,5 +1,16 @@
 import Foundation
 
+public struct RemoteHost: Codable, Equatable, Sendable {
+    /// Anything ssh accepts: user@host, or an alias from ~/.ssh/config.
+    public var destination = ""
+    public var port: String?
+    public var cudaDevices = ""
+    /// Replaces the default uvx command, for example to run a checkout on the server.
+    public var command = ""
+
+    public init() {}
+}
+
 public enum LaunchError: LocalizedError {
     case uvNotFound
 
@@ -60,6 +71,35 @@ public struct WorkerLaunch: Equatable {
             ]
         }
         return WorkerLaunch(executable: uv, arguments: arguments, environment: environment)
+    }
+
+    /// One ssh process that runs the worker on a remote host. BatchMode stops ssh from asking
+    /// for a password it cannot get. Keep-alives make a dropped link end the process, and
+    /// nothing restarts it.
+    public static func remote(engine: EngineInfo, host: RemoteHost, ssh: URL = URL(filePath: "/usr/bin/ssh")) -> WorkerLaunch {
+        var arguments = [
+            "-T",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=15",
+            "-o", "ServerAliveInterval=30",
+            "-o", "ServerAliveCountMax=3",
+        ]
+        if let port = host.port, !port.isEmpty { arguments += ["-p", port] }
+        arguments += [host.destination, remoteCommand(engine: engine, host: host)]
+        return WorkerLaunch(executable: ssh, arguments: arguments, environment: ProcessInfo.processInfo.environment)
+    }
+
+    public static func remoteCommand(engine: EngineInfo, host: RemoteHost) -> String {
+        let devices = host.cudaDevices.trimmingCharacters(in: .whitespaces)
+        let environment = devices.isEmpty ? "" : "CUDA_VISIBLE_DEVICES=\(shellQuote(devices)) "
+        let custom = host.command.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !custom.isEmpty { return environment + custom }
+        let requirement = requirement(source: repository, engine: engine)
+        return "PATH=\"$HOME/.local/bin:$HOME/.cargo/bin:$PATH\" \(environment)exec uvx --python \(engine.pythonVersion) --from \(shellQuote(requirement)) slides-to-video-worker"
+    }
+
+    static func shellQuote(_ value: String) -> String {
+        "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
     static func baseEnvironment(uv: URL) -> [String: String] {

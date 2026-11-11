@@ -21,6 +21,22 @@ public final class AppSettings {
         didSet { defaults.set(localDevice, forKey: "localDevice") }
     }
 
+    public enum WorkerLocation: String, Codable, Sendable {
+        case local, remote
+    }
+
+    public var workerLocation: WorkerLocation {
+        didSet { defaults.set(workerLocation.rawValue, forKey: "workerLocation") }
+    }
+
+    public var remoteHost: RemoteHost {
+        didSet { defaults.set(try? JSONEncoder().encode(remoteHost), forKey: "remoteHost") }
+    }
+
+    public var remoteDevice: String {
+        didSet { defaults.set(remoteDevice, forKey: "remoteDevice") }
+    }
+
     public var customEndpoint: CustomEndpoint {
         didSet { defaults.set(try? JSONEncoder().encode(customEndpoint), forKey: "customEndpoint") }
     }
@@ -29,6 +45,9 @@ public final class AppSettings {
         uvPath = defaults.string(forKey: "uvPath") ?? WorkerLaunch.findUV(preferred: nil)?.path ?? ""
         packageSource = defaults.string(forKey: "packageSource") ?? WorkerLaunch.defaultSource()
         localDevice = defaults.string(forKey: "localDevice") ?? "mps"
+        workerLocation = defaults.string(forKey: "workerLocation").flatMap(WorkerLocation.init(rawValue:)) ?? .local
+        remoteHost = defaults.data(forKey: "remoteHost").flatMap { try? JSONDecoder().decode(RemoteHost.self, from: $0) } ?? RemoteHost()
+        remoteDevice = defaults.string(forKey: "remoteDevice") ?? "cuda"
         customEndpoint = defaults.data(forKey: "customEndpoint").flatMap { try? JSONDecoder().decode(CustomEndpoint.self, from: $0) } ?? CustomEndpoint()
     }
 

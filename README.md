@@ -11,6 +11,7 @@ A Mac app that turns a slide deck into a narrated video. Open a PDF, write the n
 ## Features
 
 - **Voice cloning** from a short voice sample, with Qwen3-TTS (10 languages) or Chatterbox (English) running on your Mac
+- **Remote GPUs** over SSH, on any server with uv and CUDA
 - **Cloud voices** through ElevenLabs, Cartesia, or any HTTP endpoint you configure
 - **Video export** to MP4 at up to 4K, with optional SRT subtitles
 - **Per-slide editing**: change one slide's text and regenerate only that slide
@@ -39,6 +40,12 @@ Speed on an M1 Max, after the model has loaded:
 | ---------- | ------------------------- |
 | Chatterbox | about 4 s                 |
 | Qwen3-TTS  | about 9 s                 |
+
+## Remote GPU
+
+Qwen3-TTS and Chatterbox can also run on any machine you can reach over SSH. In Settings, set **Runs On** to **Remote server**, enter the host (`user@host` or an alias from `~/.ssh/config`), and click **Load Engine**. The server needs [uv](https://docs.astral.sh/uv/) and a CUDA GPU. The app uses your SSH keys and config, so jump hosts work as they do in Terminal.
+
+The app runs one `ssh` process that starts the worker with `uvx`, installed from the release tag matching the app version. **CUDA devices** limits which GPUs the worker sees, and **Remote command** replaces the default command, for example to run a checkout on the server. A dropped connection stays down until you click **Load Engine** again. The app never reconnects on its own.
 
 ## Cloud APIs
 

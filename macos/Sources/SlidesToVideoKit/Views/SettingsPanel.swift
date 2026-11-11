@@ -14,9 +14,14 @@ struct SettingsPanel: View {
 
     private var engine: EngineInfo? { EngineInfo.named(project.settings.engine) }
 
+    private var isRemote: Bool { settings.workerLocation == .remote }
+
+    private var device: String { isRemote ? settings.remoteDevice : settings.localDevice }
+
     private var devices: [String] {
-        let known = speech.devices.isEmpty ? ["mps", "cpu"] : speech.devices
-        return known.contains(settings.localDevice) ? known : [settings.localDevice] + known
+        let fallback = isRemote ? ["cuda", "cuda:0", "cuda:1", "cpu"] : ["mps", "cpu"]
+        let known = speech.devices.isEmpty ? fallback : speech.devices
+        return known.contains(device) ? known : [device] + known
     }
 
     var body: some View {
@@ -43,9 +48,24 @@ struct SettingsPanel: View {
                     CustomEndpointFields(endpoint: $settings.customEndpoint)
                 }
             } else {
+                row("Runs On") {
+                    FieldMenu(
+                        title: isRemote ? "Remote server (SSH)" : "This Mac",
+                        options: [("local", "This Mac"), ("remote", "Remote server (SSH)")],
+                        selection: settings.workerLocation.rawValue
+                    ) { value in
+                        let location = AppSettings.WorkerLocation(rawValue: value) ?? .local
+                        guard location != settings.workerLocation else { return }
+                        speech.stop()
+                        settings.workerLocation = location
+                    }
+                }
+                if isRemote {
+                    RemoteHostFields(host: $settings.remoteHost, engine: engine)
+                }
                 row("Device") {
-                    FieldMenu(title: settings.localDevice, options: devices.map { ($0, $0) }, selection: settings.localDevice) {
-                        settings.localDevice = $0
+                    FieldMenu(title: device, options: devices.map { ($0, $0) }, selection: device) { value in
+                        if isRemote { settings.remoteDevice = value } else { settings.localDevice = value }
                     }
                 }
             }
@@ -136,9 +156,10 @@ struct SettingsPanel: View {
                 }
                 if !engine.isCloud { toasts.show("Loading \(engine.title) engine...") }
                 Task {
-                    await speech.start(engine: engine, device: settings.localDevice, settings: settings)
+                    await speech.start(engine: engine, device: device, settings: settings)
                     if speech.isReady {
-                        toasts.show(engine.isCloud ? "Connected to \(engine.title)" : "Engine \(engine.title) loaded on \(settings.localDevice)", .success)
+                        let place = isRemote ? "\(settings.remoteHost.destination) (\(device))" : device
+                        toasts.show(engine.isCloud ? "Connected to \(engine.title)" : "Engine \(engine.title) loaded on \(place)", .success)
                     }
                 }
             } label: {
@@ -250,6 +271,41 @@ struct APIKeyRow: View {
             toasts.show("\(engine.title) key saved in the Keychain", .success)
         } catch {
             toasts.show(error.localizedDescription, .error)
+        }
+    }
+}
+
+struct RemoteHostFields: View {
+    @Binding var host: RemoteHost
+    let engine: EngineInfo?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                field("SSH host", text: $host.destination, prompt: "user@gpu-server")
+                field("Port", text: Binding(get: { host.port ?? "" }, set: { host.port = $0.isEmpty ? nil : $0 }), prompt: "22")
+                    .frame(width: 64)
+            }
+            field("CUDA devices", text: $host.cudaDevices, prompt: "All, or e.g. 0,1")
+            field("Remote command", text: $host.command, prompt: "Default: uvx from the release")
+            Text("Uses your ssh keys and ~/.ssh/config. The server needs uv and a GPU. A dropped connection stays down until you connect again.")
+                .font(Theme.ui(11))
+                .foregroundStyle(Theme.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.bottom, 14)
+    }
+
+    private func field(_ label: String, text: Binding<String>, prompt: String) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(label).font(Theme.ui(12, .medium)).foregroundStyle(Theme.textSecondary)
+            TextField("", text: text, prompt: Text(prompt).foregroundStyle(Theme.textMuted))
+                .textFieldStyle(.plain)
+                .font(Theme.ui(13))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Theme.bgTertiary, in: RoundedRectangle(cornerRadius: Theme.radiusSmall))
+                .overlay(RoundedRectangle(cornerRadius: Theme.radiusSmall).strokeBorder(Theme.borderSubtle))
         }
     }
 }

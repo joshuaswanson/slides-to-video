@@ -43,6 +43,18 @@ public final class SpeechController {
             state = .ready(engine: engine.id, device: "API")
             return
         }
+        if settings.workerLocation == .remote {
+            let host = settings.remoteHost
+            guard !host.destination.trimmingCharacters(in: .whitespaces).isEmpty else {
+                state = .failed("Enter the SSH host of your GPU server in Settings")
+                return
+            }
+            await startWorker(
+                WorkerLaunch.remote(engine: engine, host: host), engine: engine, device: device,
+                startingMessage: "Connecting to \(host.destination). The first start installs the engine on the server and can take several minutes."
+            )
+            return
+        }
         guard let uv = WorkerLaunch.findUV(preferred: settings.uvPath) else {
             state = .failed(LaunchError.uvNotFound.localizedDescription)
             return
