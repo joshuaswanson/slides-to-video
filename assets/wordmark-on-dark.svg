@@ -1,4 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 811 192" width="811" height="192" role="img" aria-label="Slides to Video">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 819 204" width="819" height="204" role="img" aria-label="Slides to Video">
+  <defs>
+    <!-- Browsers clip a filter on a nested <svg> to that viewport, so the
+         tile casts its shadow from a sibling rect that paints nothing else. -->
+    <filter id="shadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.99"/>
+      <feOffset dy="2.14" result="offset"/>
+      <feFlood flood-color="#000000" flood-opacity="0.2"/>
+      <feComposite in2="offset" operator="in"/>
+    </filter>
+  </defs>
+  <rect x="8" y="8" width="176" height="176" rx="39.53" filter="url(#shadow)"/>
   <svg x="8" y="8" width="176" height="176" viewBox="0 0 1024 1024">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
