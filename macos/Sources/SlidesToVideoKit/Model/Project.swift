@@ -10,8 +10,24 @@ public struct ProjectSettings: Codable, Equatable, Sendable {
     public var pause = 1.0
     public var speed = 1.0
     public var useClick = true
+    public var videoHeight = 1080
+    public var exportSubtitles = true
 
     public init() {}
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = ProjectSettings()
+        slidesFile = try c.decodeIfPresent(String.self, forKey: .slidesFile)
+        voiceFile = try c.decodeIfPresent(String.self, forKey: .voiceFile)
+        engine = try c.decodeIfPresent(String.self, forKey: .engine)
+        language = try c.decodeIfPresent(String.self, forKey: .language) ?? defaults.language
+        pause = try c.decodeIfPresent(Double.self, forKey: .pause) ?? defaults.pause
+        speed = try c.decodeIfPresent(Double.self, forKey: .speed) ?? defaults.speed
+        useClick = try c.decodeIfPresent(Bool.self, forKey: .useClick) ?? defaults.useClick
+        videoHeight = try c.decodeIfPresent(Int.self, forKey: .videoHeight) ?? defaults.videoHeight
+        exportSubtitles = try c.decodeIfPresent(Bool.self, forKey: .exportSubtitles) ?? defaults.exportSubtitles
+    }
 }
 
 @MainActor

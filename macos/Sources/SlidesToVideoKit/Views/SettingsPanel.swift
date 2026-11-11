@@ -61,14 +61,15 @@ struct SettingsPanel: View {
                 row("Pause (s)") { NumberField(value: $project.settings.pause, range: 0...10, step: 0.1) }
                 row("Speed") { NumberField(value: $project.settings.speed, range: 0.5...3, step: 0.05) }
             }
-            Toggle(isOn: $project.settings.useClick) {
-                Text("Click sound on slide transitions")
-                    .font(Theme.ui(12, .medium))
-                    .foregroundStyle(Theme.textSecondary)
+            checkbox("Click sound on slide transitions", isOn: $project.settings.useClick)
+            row("Video Height") {
+                FieldMenu(
+                    title: "\(project.settings.videoHeight)p",
+                    options: [720, 1080, 1440, 2160].map { ("\($0)", "\($0)p") },
+                    selection: "\(project.settings.videoHeight)"
+                ) { project.settings.videoHeight = Int($0) ?? 1080 }
             }
-            .toggleStyle(.checkbox)
-            .tint(Theme.green)
-            .padding(.bottom, 14)
+            checkbox("Save subtitles (.srt) next to the video", isOn: $project.settings.exportSubtitles)
             row("Voice Sample") {
                 UploadButton(title: project.settings.voiceFile ?? "Choose audio file...", uploaded: project.settings.voiceFile != nil) {
                     pick([.audio]) { url in
@@ -150,6 +151,17 @@ struct SettingsPanel: View {
             .textSelection(.enabled)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 6)
+    }
+
+    private func checkbox(_ title: String, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            Text(title)
+                .font(Theme.ui(12, .medium))
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .toggleStyle(.checkbox)
+        .tint(Theme.green)
+        .padding(.bottom, 14)
     }
 
     private func row<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {

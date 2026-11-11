@@ -99,6 +99,7 @@ struct TopBar: View {
     let toasts: Toasts
     let beforePlay: () -> Void
     @State private var showSettings = false
+    @State private var exporter = ExportController()
 
     var body: some View {
         ZStack {
@@ -111,12 +112,10 @@ struct TopBar: View {
                     .foregroundStyle(Theme.textMuted)
                     .lineLimit(1)
                 Spacer(minLength: 280)
-                Button {
-                    toasts.show("Video export is not built yet")
-                } label: {
-                    Label("Export Video", systemImage: "square.and.arrow.down")
+                ExportButton(project: project, controller: exporter, toasts: toasts) {
+                    talk.stop()
+                    beforePlay()
                 }
-                .buttonStyle(.editor(.primary))
                 Button {
                     showSettings.toggle()
                 } label: {
