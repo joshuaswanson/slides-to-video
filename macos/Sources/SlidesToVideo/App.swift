@@ -20,6 +20,10 @@ struct SlidesToVideoApp: App {
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1400, height: 880)
         .commands {
+            CommandGroup(replacing: .help) {
+                Link("Report an Issue…", destination: AppLinks.issues)
+                Link("Buy Me a Coffee…", destination: AppLinks.coffee)
+            }
             CommandGroup(replacing: .newItem) {
                 Button("New from PDF…") { model.choosePDF() }
                     .keyboardShortcut("n")

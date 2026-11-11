@@ -86,6 +86,11 @@ struct SettingsPanel: View {
                 }
             }
             status
+            Rectangle().fill(Theme.borderMuted).frame(height: 1).padding(.vertical, 12)
+            HStack(spacing: 16) {
+                FooterLink(title: "Report an Issue", systemImage: "exclamationmark.bubble", url: AppLinks.issues)
+                FooterLink(title: "Buy Me a Coffee", systemImage: "cup.and.saucer", url: AppLinks.coffee)
+            }
         }
         .padding(16)
         .frame(width: 320)
@@ -169,6 +174,29 @@ extension SpeechController.State {
     var isFailure: Bool {
         if case .failed = self { return true }
         return false
+    }
+}
+
+public enum AppLinks {
+    public static let issues = URL(string: "https://github.com/joshuaswanson/slides-to-video/issues")!
+    public static let coffee = URL(string: "https://buymeacoffee.com/swanson")!
+}
+
+struct FooterLink: View {
+    let title: String
+    let systemImage: String
+    let url: URL
+    @State private var hovering = false
+
+    var body: some View {
+        Link(destination: url) {
+            Label(title, systemImage: systemImage)
+                .labelStyle(EditorLabelStyle())
+                .font(Theme.ui(12, .medium))
+                .foregroundStyle(hovering ? Theme.green : Theme.textSecondary)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
     }
 }
 
