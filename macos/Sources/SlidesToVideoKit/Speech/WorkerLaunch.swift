@@ -29,7 +29,7 @@ public struct WorkerLaunch: Equatable {
     public static let repository = "https://github.com/joshuaswanson/slides-to-video"
     /// Must equal the version in pyproject.toml. Each app build runs the worker from the
     /// matching release tag, so later pushes to the repository cannot change what it runs.
-    public static let packageVersion = "0.4.2"
+    public static let packageVersion = "1.0.0"
 
     static func isLocalPath(_ source: String) -> Bool {
         source.hasPrefix("/") || source.hasPrefix("~")

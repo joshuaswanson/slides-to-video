@@ -3696,7 +3696,7 @@ wheels = [
 
 [[package]]
 name = "slides-to-video"
-version = "0.4.2"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "numpy", version = "1.25.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.12' and extra == 'extra-15-slides-to-video-chatterbox') or (extra == 'extra-15-slides-to-video-chatterbox' and extra == 'extra-15-slides-to-video-qwen3')" },
