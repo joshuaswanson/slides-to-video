@@ -16,6 +16,7 @@ The same worker runs locally or on a remote GPU host through ssh.
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import os
 import sys
@@ -27,9 +28,7 @@ from typing import IO
 import numpy as np
 
 from . import __version__
-from .audio import make_ambient_loop, synthesize_slide
-from .script import Slide
-from .tools import file_hash
+from .speech import make_ambient_loop, synthesize
 from .tts_engines import ENGINES, LANGUAGES, TTSEngine, check_language, get_engine
 
 PROTOCOL_VERSION = 1
@@ -83,7 +82,7 @@ class Worker:
         path = self.voice_dir / "voice.wav"
         path.write_bytes(base64.b64decode(request["wav_b64"]))
         self.voice_path = path
-        return {"voice_hash": file_hash(path)}
+        return {"voice_hash": hashlib.sha256(path.read_bytes()).hexdigest()[:16]}
 
     def _ready(self, language: str) -> tuple[TTSEngine, Path]:
         if self.engine is None:
@@ -96,7 +95,7 @@ class Worker:
     def cmd_synthesize(self, request: dict) -> dict:
         language = request.get("language", "en")
         engine, voice = self._ready(language)
-        wav, sr = synthesize_slide(Slide(0, request["text"]), engine, voice, language)
+        wav, sr = synthesize(request["text"], engine, voice, language)
         return {"sample_rate": sr, "pcm16_b64": encode_pcm16(wav)}
 
     def cmd_ambient(self, request: dict) -> dict:

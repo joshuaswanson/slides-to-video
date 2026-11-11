@@ -34,7 +34,7 @@ public struct WorkerLaunch: Equatable {
     public static let repository = "https://github.com/joshuaswanson/slides-to-video"
     /// Must equal the version in pyproject.toml. Each app build installs the worker from the
     /// matching release tag, so later pushes to the repository cannot change what it runs.
-    public static let packageVersion = "0.3.0"
+    public static let packageVersion = "0.4.0"
 
     /// The package spec uv installs the worker from: a local checkout, or a git URL pinned to
     /// `v<packageVersion>` unless the URL already names a ref after `@`.

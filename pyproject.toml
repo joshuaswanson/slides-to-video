@@ -1,22 +1,17 @@
 [project]
 name = "slides-to-video"
-version = "0.3.0"
-description = "Generate narrated presentation videos from slides, a script, and a voice sample"
+version = "0.4.0"
+description = "TTS worker for the Slides to Video Mac app"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 dependencies = [
-    "fastapi",
     "numpy",
-    "python-multipart",
     "soundfile",
     "torch>=2.6,<2.8",
     "torchaudio>=2.6,<2.8",
-    "uvicorn",
 ]
 
 [project.scripts]
-slides-to-video = "slides_to_video.cli:main"
-slides-to-video-editor = "slides_to_video.server:main"
 slides-to-video-worker = "slides_to_video.worker:main"
 
 [project.optional-dependencies]
@@ -28,7 +23,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["httpx", "pytest"]
+dev = ["pytest"]
 
 [tool.uv]
 conflicts = [

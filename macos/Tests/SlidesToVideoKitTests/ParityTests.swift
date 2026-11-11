@@ -2,8 +2,8 @@ import Foundation
 import Testing
 @testable import SlidesToVideoKit
 
-/// Compares the Swift port with outputs recorded from the Python package by
-/// `macos/scripts/make_parity_fixture.py`.
+/// Golden outputs in `Fixtures/parity.json` pin the script format, cache keys, and track
+/// layout, so projects and caches written by earlier versions stay valid.
 struct ParityTests {
     struct Fixture: Decodable {
         struct ScriptCase: Decodable {

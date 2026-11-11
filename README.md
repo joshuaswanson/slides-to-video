@@ -6,88 +6,53 @@
 </p>
 <br>
 
-Turn slide decks into narrated videos with AI voice cloning. Provide a PDF, a markdown script, and a voice sample of about 5 seconds, and get a presentation video.
-
-All processing runs locally on your GPU.
+A Mac app that turns a slide deck into a narrated video. Open a PDF, write the narration for each slide, give it a few seconds of your voice, and it reads your script in your voice over the slides.
 
 ## Features
 
-- **Multiple TTS engines**: Qwen3-TTS (10 languages), Chatterbox (English)
-- **Voice cloning** from a short audio sample. Multiple samples are concatenated.
-- **Caching**: audio is regenerated only for slides whose text, voice, engine, or language changed
-- **Web editor** for editing the script, generating audio per slide, previewing the full talk, and exporting
-- **Click sounds** at slide transitions, with the slide changing between key press and release
-- **Ambient pauses** filled with the TTS model's own background noise
-- **SRT subtitles** aligned to the narration
+- **Voice cloning** with Qwen3-TTS (10 languages) or Chatterbox (English), from a short voice sample
+- **Runs on your Mac** on the Apple Silicon GPU
+- **Per-slide editing**: change one slide's text and regenerate only that slide
+- **Play All** previews the whole talk with pauses and click sounds between slides
+- **Ambient pauses** filled with the voice model's own background noise
 - **Speed control** and inline `[pause]` markers
 
 ## Requirements
 
-- Python 3.10 to 3.13
-- An NVIDIA GPU with CUDA for practical generation speed
-- `ffmpeg` and `pdftoppm` (from `poppler-utils`) on `PATH`
+- macOS 15 or later, Apple Silicon recommended
+- [uv](https://docs.astral.sh/uv/), which the app uses to install and run the TTS engines
+- Xcode 16 or later to build the app
 
-## Installation
-
-```bash
-uv sync --extra qwen3                       # Qwen3-TTS
-uv sync --extra chatterbox --python 3.11    # or Chatterbox
-```
-
-Chatterbox's dependencies pin old packages without Python 3.12 wheels, so its environment needs Python 3.10 or 3.11.
-
-## Quick Start (CLI)
+## Build and Run
 
 ```bash
-uv run slides-to-video \
-    --slides presentation.pdf \
-    --script script.md \
-    --voice voice_sample.wav \
-    --tts-engine qwen3 \
-    --click-sound
+cd macos
+swift run SlidesToVideo
 ```
 
-## Web Editor
+Choose **New from PDF** and pick your slides. The app creates `script.md` next to the PDF with one section per page. In Settings, pick a TTS engine and a voice sample, then click **Load Engine**. The first load installs the engine's Python environment, which takes a few minutes.
 
-```bash
-uv run slides-to-video-editor --script script.md --slides presentation.pdf --voice voice_sample.wav --tts-engine qwen3
+Speed on an M1 Max, after the model has loaded:
+
+| Engine     | Time per second of speech |
+| ---------- | ------------------------- |
+| Chatterbox | about 4 s                 |
+| Qwen3-TTS  | about 9 s                 |
+
+## Projects
+
+A project is a folder:
+
+```
+my-talk/
+  talk.pdf               # slides
+  script.md              # narration, one section per slide
+  voice_sample.m4a       # voice to clone
+  slides-to-video.json   # engine, language, pause, speed, click
+  .cache/                # generated audio
 ```
 
-Open http://localhost:8000. Without `--tts-engine`, select an engine in Settings before generating. Cached clips only count as current for the engine that made them. Slides, the voice sample, the engine, language, pause, speed, and click sound can also be set from the Settings panel.
-
-The editor has no authentication and binds to `127.0.0.1` by default. On a remote GPU machine, reach it through an SSH tunnel:
-
-```bash
-ssh -L 8000:localhost:8000 gpu-host
-```
-
-Editor options: `--script` (default `script.md`), `--slides`, `--voice`, `--cache-dir`, `--tts-engine`, `--device`, `--language`, `--click-sound`, `--height`, `--host`, `--port`.
-
-## CLI Options
-
-| Flag                 | Default      | Description                                                              |
-| -------------------- | ------------ | ------------------------------------------------------------------------ |
-| `--slides`           | (required)   | Path to slides PDF                                                       |
-| `--script`           | (required)   | Path to narration script (markdown)                                      |
-| `--voice`            | (required)   | Path to voice sample(s). Multiple files are concatenated.                |
-| `--output`           | `output.mp4` | Output video path                                                        |
-| `--tts-engine`       | (required)   | TTS engine (`qwen3`, `chatterbox`)                                       |
-| `--language`         | `en`         | Language code (en, zh, ja, ko, fr, de, es, ar, ru, pt). Chatterbox: en.  |
-| `--pause`            | `1.0`        | Seconds of ambient pause before and after each slide's narration         |
-| `--speed`            | (none)       | Narration speed multiplier (e.g. 1.2 for 20% faster), at least 0.5       |
-| `--click-sound`      | (none)       | Click at slide transitions. Without a path, uses the bundled click.      |
-| `--height`           | `1080`       | Video height in pixels                                                   |
-| `--only-slides`      | (none)       | Process specific slides only (e.g. `3-7` or `1,3,5`)                     |
-| `--preview`          | off          | Generate audio only, skip video assembly                                 |
-| `--srt`              | (none)       | Export SRT subtitles to the given path                                   |
-| `--regenerate`       | off          | Force regeneration of all audio clips                                    |
-| `--regenerate-slide` | (none)       | Regenerate specific slides (e.g. `--regenerate-slide 3 7`)               |
-| `--device`           | `cuda`       | PyTorch device                                                           |
-| `--cache-dir`        | `.cache`     | Directory for cached audio clips and slide images                        |
-
-## Script Format
-
-Slides are separated by lines containing only `---`. Each slide starts with a `## Slide N` heading, where `N` is the PDF page number:
+`script.md` is plain markdown. Slides are separated by lines containing only `---`, and each starts with a `## Slide N` heading, where `N` is the PDF page number:
 
 ```markdown
 ## Slide 1 - Title
@@ -103,51 +68,52 @@ Paragraphs and line breaks are kept in the file and joined for narration.
 Use [pause] for a 0.5 second pause, or [pause 1.5] for a custom duration.
 ```
 
-A slide with a heading and no narration is shown for the two pauses only.
+You can edit `script.md` in any editor. The app reloads it when you switch back. Each slide occupies `[pause][narration][pause]`, and the click sound is placed so the slide changes between the key press and the release.
 
-## Timing
+Audio is cached per slide in `.cache/audio_clips/`. A clip is reused while the slide's narration, the voice sample, the engine, and the language are unchanged.
 
-Each slide occupies `[pause][narration][pause]`. The click sound is placed so the slide image changes between the key press and the release. The editor's Play All preview, the exported video, and the SRT file all use the same narration track.
+## TTS Worker
 
-## Caching
+The app generates speech through `slides-to-video-worker`, a small Python process in this repository that it talks to over stdin and stdout. Run from a checkout, the app uses the checkout's code. A standalone build installs the worker from the release tag matching its version:
 
-Everything is cached in `.cache/` by default:
+```bash
+uvx --python 3.12 --from "slides-to-video[qwen3] @ git+https://github.com/joshuaswanson/slides-to-video@v0.4.0" slides-to-video-worker
+```
 
-- `audio_clips/` holds one WAV per slide. A clip is reused while the slide's narration, the voice sample, the engine, and the language are unchanged.
-- `slide_images/` holds the rendered pages and thumbnails. They are re-rendered when the PDF contents or `--height` change.
-- `voice.wav` is the prepared voice sample. The editor reuses it across restarts.
-- `video.mp4` is the editor's exported video, and `slides.pdf` is a PDF uploaded in the editor.
-
-Use `--regenerate` to redo all audio, or `--regenerate-slide 3 7` to redo specific slides.
-
-Clips cached by version 0.1 recorded only the slide text. The first run with a voice sample adopts them for that run's engine, language, and voice, and prints a warning for each slide. Run it with the engine and voice that made those clips, or use `--regenerate`.
+Chatterbox needs Python 3.11 (`--python 3.11` and the `[chatterbox]` extra), because its dependencies pin packages without Python 3.12 wheels.
 
 ## Development
 
 ```bash
-uv run pytest
+uv run pytest                 # Python worker tests
+cd macos && swift test        # app tests
 ```
 
-The tests use a fake TTS engine and need `ffmpeg` and `pdftoppm`, but no GPU or model download.
+The Python tests use a fake TTS engine. To run the app's end-to-end test with a real engine on this Mac:
+
+```bash
+cd macos
+S2V_INTEGRATION=1 S2V_VOICE=/path/to/voice.m4a S2V_ENGINE=chatterbox swift test --filter IntegrationTests
+```
 
 ## Project Structure
 
 ```
+macos/
+  Sources/SlidesToVideo/        # app entry point
+  Sources/SlidesToVideoKit/
+    Model/                      # script format, clip cache, narration track, audio files
+    Speech/                     # worker process, launch commands, engine controller
+    Views/                      # SwiftUI interface
+  Tests/
 src/slides_to_video/
-  cli.py            # slides-to-video command
-  server.py         # slides-to-video-editor command (FastAPI)
-  script.py         # script parsing and editing
-  audio.py          # voice preparation, TTS clips, narration track
-  video.py          # slide rendering, video encoding, subtitles
-  tts_engines.py    # Qwen3 and Chatterbox engines
-  tools.py          # ffmpeg/pdftoppm runner and hashing helpers
-  worker.py         # slides-to-video-worker, the TTS process the Mac app talks to
-  web/editor.html   # editor frontend
-  assets/click.wav  # bundled transition click
-assets/             # README images
+  worker.py                     # slides-to-video-worker
+  speech.py                     # narration with [pause] markers, ambient loop
+  tts_engines.py                # Qwen3 and Chatterbox
+tests/
+assets/                         # README images
 examples/
   example_script.md
-tests/
 ```
 
 ## Support
