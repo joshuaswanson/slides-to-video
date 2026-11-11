@@ -17,6 +17,11 @@ dependencies = [
 [project.scripts]
 slides-to-video = "slides_to_video.cli:main"
 slides-to-video-editor = "slides_to_video.server:main"
+slides-to-video-worker = "slides_to_video.worker:main"
+
+[project.optional-dependencies]
+chatterbox = ["chatterbox-tts", "ml-dtypes>=0.5", "setuptools<81"]
+qwen3 = ["qwen-tts"]
 
 [build-system]
 requires = ["hatchling"]
@@ -24,14 +29,12 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = ["httpx", "pytest"]
-chatterbox = ["chatterbox-tts", "ml-dtypes>=0.5", "setuptools<81"]
-qwen3 = ["qwen-tts"]
 
 [tool.uv]
 conflicts = [
     [
-        { group = "chatterbox" },
-        { group = "qwen3" },
+        { extra = "chatterbox" },
+        { extra = "qwen3" },
     ],
 ]
 

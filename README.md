@@ -30,8 +30,8 @@ All processing runs locally on your GPU.
 ## Installation
 
 ```bash
-uv sync --group qwen3                       # Qwen3-TTS
-uv sync --group chatterbox --python 3.11    # or Chatterbox
+uv sync --extra qwen3                       # Qwen3-TTS
+uv sync --extra chatterbox --python 3.11    # or Chatterbox
 ```
 
 Chatterbox's dependencies pin old packages without Python 3.12 wheels, so its environment needs Python 3.10 or 3.11.
@@ -141,6 +141,7 @@ src/slides_to_video/
   video.py          # slide rendering, video encoding, subtitles
   tts_engines.py    # Qwen3 and Chatterbox engines
   tools.py          # ffmpeg/pdftoppm runner and hashing helpers
+  worker.py         # slides-to-video-worker, the TTS process the Mac app talks to
   web/editor.html   # editor frontend
   assets/click.wav  # bundled transition click
 assets/             # README images
