@@ -182,11 +182,7 @@ struct FieldMenu: View {
     var body: some View {
         Menu {
             ForEach(options, id: \.0) { option in
-                Button {
-                    choose(option.0)
-                } label: {
-                    if option.0 == selection { Label(option.1, systemImage: "checkmark") } else { Text(option.1) }
-                }
+                Toggle(option.1, isOn: Binding(get: { option.0 == selection }, set: { _ in choose(option.0) }))
             }
         } label: {
             HStack {
