@@ -18,6 +18,7 @@ A Mac app that turns a slide deck into a narrated video. Open a PDF, write the n
 - **Play All** previews the whole talk with pauses and click sounds between slides
 - **Ambient pauses** filled with the voice model's own background noise
 - **Speed control** and inline `[pause]` markers
+- **Automatic updates** through Sparkle
 
 ## Install
 
@@ -26,6 +27,8 @@ Download `SlidesToVideo-<version>.dmg` from the [latest release](https://github.
 The app is not notarized by Apple, so macOS blocks it on first launch. Open it once, then go to **System Settings > Privacy & Security** and click **Open Anyway**.
 
 To generate voices on your Mac or a remote server, install [uv](https://docs.astral.sh/uv/). The cloud APIs need only an API key.
+
+The app checks for updates automatically, and **Slides to Video > Check for Updates…** checks right away.
 
 ## Requirements
 
@@ -50,7 +53,10 @@ To publish a release:
 
 1. Set the same new version in `pyproject.toml` and `WorkerLaunch.packageVersion`, run `uv lock`, and commit.
 2. Tag and push: `git tag -a vX.Y.Z -m vX.Y.Z && git push origin main vX.Y.Z`. Downloaded apps install their voice engines from this tag, so it must exist before anyone downloads the DMG.
-3. Run `macos/Packaging/build_dmg.sh`, which refuses to build if the tag is missing on GitHub or points at another commit, and attach the DMG to a GitHub release for the tag.
+3. Run `macos/Packaging/build_dmg.sh`, which refuses to build if the tag is missing on GitHub or points at another commit. It signs the DMG for Sparkle and writes `macos/dist/appcast.xml`.
+4. Create a GitHub release for the tag with both the DMG and `appcast.xml`. Installed apps read the appcast from the latest release, so publishing the release delivers the update.
+
+Updates are signed with an EdDSA key stored in the login Keychain under the account `slides-to-video`, and the app only accepts updates signed with it. Back it up with `macos/.build/artifacts/sparkle/Sparkle/bin/generate_keys --account slides-to-video -x key-backup` and keep the file somewhere safe. Without that key, installed apps can never be updated again.
 
 Choose **New from PDF** and pick your slides. The app creates `script.md` next to the PDF with one section per page. In Settings, pick a TTS engine and a voice sample, then click **Load Engine**. The first load installs the engine's Python environment, which takes a few minutes.
 

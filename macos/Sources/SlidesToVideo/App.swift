@@ -4,10 +4,13 @@ import SwiftUI
 
 @main
 struct SlidesToVideoApp: App {
-    @State private var model = AppModel()
+    @State private var model: AppModel
+    private let updater: Updater
 
     init() {
         Askpass.runHelperIfRequested()
+        _model = State(initialValue: AppModel())
+        updater = Updater()
         NSApplication.shared.setActivationPolicy(.regular)
     }
 
@@ -21,6 +24,10 @@ struct SlidesToVideoApp: App {
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1400, height: 880)
         .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { updater.checkForUpdates() }
+                    .disabled(!updater.isAvailable)
+            }
             CommandGroup(replacing: .help) {
                 Link("Report an Issue…", destination: AppLinks.issues)
                 Link("Buy Me a Coffee…", destination: AppLinks.coffee)
